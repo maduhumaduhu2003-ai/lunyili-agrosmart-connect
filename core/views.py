@@ -10,7 +10,7 @@ from .forms import RegisterForm, LoginForm
 from .models import (
     User, Farmer, Supplier, Buyer, Order, Product, 
     LoanApplication, Advice, BuyingRequest, InterestedFarmer,
-    LoanProduct
+    LoanProduct, ExtensionOfficer, FinancialInstitution
 )
 
 
@@ -41,9 +41,9 @@ def register_view(request):
 
 
 def login_view(request):
-    """Login user"""
+    """Login user - redirect based on role"""
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect(get_dashboard_url(request.user))
     
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
@@ -54,7 +54,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f"Welcome back, {user.username}!")
-                return redirect('dashboard')
+                return redirect(get_dashboard_url(user))
         messages.error(request, "Invalid username or password")
     else:
         form = LoginForm()
@@ -69,39 +69,43 @@ def logout_view(request):
     return redirect('index')
 
 
-@login_required
-def dashboard_view(request):
-    """Dashboard - shows different content based on role"""
-    user = request.user
+def get_dashboard_url(user):
+    """Get the appropriate dashboard URL based on user role"""
     role = user.role
     
-    # Get common data
-    context = {
-        'user': user,
-        'role': role,
-        'role_display': user.get_role_display(),
-    }
-    
-    # Role-specific dashboard
-    if role == 'SUPER_ADMIN':
-        context.update(get_super_admin_dashboard_data())
-        template = 'dashboards/super_admin.html'
+    # Match with actual role values from models
+    if role == 'ADMIN':
+        return 'admin:index'
     elif role == 'SUPPLIER':
-        context.update(get_supplier_dashboard_data(user))
-        template = 'dashboards/supplier.html'
+        # Check if supplier has profile
+        if Supplier.objects.filter(user=user).exists():
+            return 'supplier_products'
+        else:
+            return 'supplier_profile_create'
     elif role == 'BUYER':
-        context.update(get_buyer_dashboard_data(user))
-        template = 'dashboards/buyer.html'
-    elif role == 'FINANCIAL_INSTITUTION':
-        context.update(get_financial_dashboard_data(user))
-        template = 'dashboards/financial.html'
+        if Buyer.objects.filter(user=user).exists():
+            return 'buyer_dashboard'
+        else:
+            return 'buyer_profile_create'
+    elif role == 'FINANCIAL':
+        if FinancialInstitution.objects.filter(user=user).exists():
+            return 'financial_dashboard'
+        else:
+            return 'financial_profile_create'
     elif role == 'EXTENSION_OFFICER':
-        context.update(get_extension_dashboard_data(user))
-        template = 'dashboards/extension_officer.html'
+        if ExtensionOfficer.objects.filter(user=user).exists():
+            return 'extension_dashboard'
+        else:
+            return 'extension_profile_create'
     else:
-        template = 'dashboard.html'
-    
-    return render(request, template, context)
+        return 'dashboard'
+
+
+@login_required
+def dashboard_view(request):
+    """Dashboard - redirect to role-specific dashboard"""
+    user = request.user
+    return redirect(get_dashboard_url(user))
 
 
 # ===================== DASHBOARD DATA FUNCTIONS =====================
@@ -114,7 +118,7 @@ def get_super_admin_dashboard_data():
     # Users by role
     suppliers = User.objects.filter(role='SUPPLIER').count()
     buyers = User.objects.filter(role='BUYER').count()
-    financial = User.objects.filter(role='FINANCIAL_INSTITUTION').count()
+    financial = User.objects.filter(role='FINANCIAL').count()
     extension = User.objects.filter(role='EXTENSION_OFFICER').count()
     
     # Farmers
@@ -173,9 +177,8 @@ def get_supplier_dashboard_data(user):
     }
 
 
-# ===================== BUYER DASHBOARD DATA =====================
 def get_buyer_dashboard_data(user):
-    """Data for Buyer dashboard - shows buying requests and interested farmers"""
+    """Data for Buyer dashboard"""
     buyer = Buyer.objects.filter(user=user).first()
     
     if not buyer:
@@ -189,24 +192,20 @@ def get_buyer_dashboard_data(user):
             'interested_farmers_count': 0,
         }
     
-    # Get buying requests
     requests = BuyingRequest.objects.filter(buyer=buyer).order_by('-created_at')
     total_requests = requests.count()
     open_requests = requests.filter(is_open=True).count()
     closed_requests = requests.filter(is_open=False).count()
     recent_requests = requests[:5]
     
-    # Get interested farmers for this buyer
     interested_farmers = []
     interested_farmers_count = 0
     
-    # Get all interested farmers for this buyer's requests
     all_interested = InterestedFarmer.objects.filter(
         buying_request__buyer=buyer
     ).select_related('farmer', 'buying_request').order_by('-created_at')
     
     if all_interested.exists():
-        # Group by buying request
         grouped = {}
         for item in all_interested:
             req_id = item.buying_request.id
@@ -233,9 +232,7 @@ def get_buyer_dashboard_data(user):
 
 def get_financial_dashboard_data(user):
     """Data for Financial Institution dashboard"""
-    from .models import FinancialInstitution, LoanProduct, LoanApplication
-    
-    institution = user.financial_profile if hasattr(user, 'financial_profile') else None
+    institution = FinancialInstitution.objects.filter(user=user).first()
     
     if not institution:
         return {
@@ -249,45 +246,47 @@ def get_financial_dashboard_data(user):
             'recent_applications': [],
         }
     
-    # Loan products
     loan_products = LoanProduct.objects.filter(institution=institution).count()
-    
-    # Loan applications
     applications = LoanApplication.objects.filter(loan_product__institution=institution)
-    total_applications = applications.count()
-    pending_applications = applications.filter(status='PENDING').count()
-    approved_applications = applications.filter(status='APPROVED').count()
-    disbursed_applications = applications.filter(status='DISBURSED').count()
-    rejected_applications = applications.filter(status='REJECTED').count()
-    recent_applications = applications.order_by('-created_at')[:5]
     
     return {
         'institution': institution,
         'loan_products': loan_products,
-        'total_applications': total_applications,
-        'pending_applications': pending_applications,
-        'approved_applications': approved_applications,
-        'disbursed_applications': disbursed_applications,
-        'rejected_applications': rejected_applications,
-        'recent_applications': recent_applications,
+        'total_applications': applications.count(),
+        'pending_applications': applications.filter(status='PENDING').count(),
+        'approved_applications': applications.filter(status='APPROVED').count(),
+        'disbursed_applications': applications.filter(status='DISBURSED').count(),
+        'rejected_applications': applications.filter(status='REJECTED').count(),
+        'recent_applications': applications.order_by('-created_at')[:5],
     }
-    
+
 
 def get_extension_dashboard_data(user):
     """Data for Extension Officer dashboard"""
-    officer = user.officer_profile if hasattr(user, 'officer_profile') else None
+    officer = ExtensionOfficer.objects.filter(user=user).first()
     
-    # Advice articles
-    total_advice = Advice.objects.filter(author=officer).count() if officer else 0
-    published_advice = Advice.objects.filter(author=officer, is_published=True).count() if officer else 0
+    if not officer:
+        return {
+            'officer': None,
+            'total_advice': 0,
+            'published_advice': 0,
+            'total_farmers': 0,
+            'active_farmers': 0,
+            'recent_advice': [],
+        }
     
-    # Farmers in region (if officer has region)
-    farmers = Farmer.objects.filter(region=officer.region) if officer and officer.region else Farmer.objects.none()
-    total_farmers = farmers.count()
-    active_farmers = farmers.filter(is_active=True).count()
+    advice = Advice.objects.filter(author=officer)
+    total_advice = advice.count()
+    published_advice = advice.filter(is_published=True).count()
+    recent_advice = advice.order_by('-created_at')[:5]
     
-    # Recent advice
-    recent_advice = Advice.objects.filter(author=officer).order_by('-created_at')[:5] if officer else []
+    if officer.region:
+        farmers = Farmer.objects.filter(region__icontains=officer.region)
+        total_farmers = farmers.count()
+        active_farmers = farmers.filter(is_active=True).count()
+    else:
+        total_farmers = Farmer.objects.count()
+        active_farmers = Farmer.objects.filter(is_active=True).count()
     
     return {
         'officer': officer,
@@ -318,41 +317,3 @@ def profile_view(request):
         return redirect('profile')  
     
     return render(request, 'profile.html', {'user': request.user})
-
-def get_extension_dashboard_data(user):
-    """Data for Extension Officer dashboard"""
-    officer = user.officer_profile if hasattr(user, 'officer_profile') else None
-    
-    if not officer:
-        return {
-            'officer': None,
-            'total_advice': 0,
-            'published_advice': 0,
-            'total_farmers': 0,
-            'active_farmers': 0,
-            'recent_advice': [],
-        }
-    
-    # Advice articles
-    advice = Advice.objects.filter(author=officer)
-    total_advice = advice.count()
-    published_advice = advice.filter(is_published=True).count()
-    recent_advice = advice.order_by('-created_at')[:5]
-    
-    # Farmers in officer's region
-    if officer.region:
-        farmers = Farmer.objects.filter(region__icontains=officer.region)
-        total_farmers = farmers.count()
-        active_farmers = farmers.filter(is_active=True).count()
-    else:
-        total_farmers = Farmer.objects.count()
-        active_farmers = Farmer.objects.filter(is_active=True).count()
-    
-    return {
-        'officer': officer,
-        'total_advice': total_advice,
-        'published_advice': published_advice,
-        'total_farmers': total_farmers,
-        'active_farmers': active_farmers,
-        'recent_advice': recent_advice,
-    }

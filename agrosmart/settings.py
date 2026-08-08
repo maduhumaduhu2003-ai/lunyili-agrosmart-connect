@@ -258,7 +258,8 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default=f"{SYSTEM_NAME} <no-reply
 # ---------------------------------------------------------------------------
 AT_USERNAME = env("AT_USERNAME", default="sandbox")
 AT_API_KEY = env("AT_API_KEY", default="")
-AT_SENDER_ID = env("AT_SENDER_ID", default="sandbox")
+AT_SENDER_ID = env("AT_SENDER_ID", default="agrosmart")
+AT_SMS_CALLBACK_URL = env("AT_SMS_CALLBACK_URL", default="")
 AT_SMS_DRY_RUN = env.bool("AT_SMS_DRY_RUN", default=not bool(AT_API_KEY))
 AT_SHORT_CODE = env("AT_SHORT_CODE", default="*384*20997#")
 

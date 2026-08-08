@@ -10,7 +10,8 @@ from ..models import (
     Farmer, Product, Category, Order, OrderItem, 
     LoanApplication, SMSMessage, Supplier, User,
     MarketPrice, BuyingRequest, Advice, WeatherData,
-    WeatherAlert, USSDStatus, Buyer, InterestedFarmer
+    WeatherAlert, USSDStatus, Buyer, InterestedFarmer,
+    LoanProduct, FinancialInstitution
 )
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,8 @@ def screen_main_menu() -> str:
         "5. Ushauri wa Kilimo\n"
         "6. Hali ya Hewa\n"
         "7. Huduma za Kifedha\n"
-        "0. Mwisho"
+        "0. Mwisho\n"
+        "# Ghairi | 00 Nyumbani"
     )
 
 
@@ -53,6 +55,29 @@ def _get_last_input(text: str) -> str:
         return ""
     parts = text.split('*')
     return parts[-1] if parts else ""
+
+
+def _normalize_number_input(value: str) -> str:
+    """Strip common punctuation from numeric user input."""
+    if not value:
+        return ""
+    return ''.join(ch for ch in value if ch.isdigit())
+
+
+def _parse_int(value: str) -> int | None:
+    try:
+        clean = _normalize_number_input(value)
+        return int(clean) if clean else None
+    except ValueError:
+        return None
+
+
+def _parse_decimal(value: str) -> Decimal | None:
+    try:
+        clean = ''.join(ch for ch in value if ch.isdigit() or ch == '.')
+        return Decimal(clean) if clean else None
+    except Exception:
+        return None
 
 
 class USSDEngine:
@@ -90,16 +115,59 @@ class USSDEngine:
         USSDSessionService.end_session(session=self.session)
 
     def _send_sms(self, phone_number: str, message: str):
-        """Send SMS"""
+        """Send SMS using Africa's Talking with Sender ID agrosmart"""
         try:
-            SMSMessage.objects.create(
+            # Create SMS record first
+            sms = SMSMessage.objects.create(
                 recipient=phone_number,
                 message=message,
                 status='QUEUED'
             )
-            self.logger.info(f"SMS queued for {phone_number}")
+            
+            # Import here to avoid circular import
+            from .africastalking_service import AfricaTalkingService
+            
+            # Initialize service
+            service = AfricaTalkingService()
+            
+            # Send SMS with sender_id AGROSMART
+            result = service.send_sms(
+                phone_number=phone_number,
+                message=message,
+                sender_id="agrosmart"  # ← SENDER ID
+            )
+            
+            logger.info(f"SMS Result for {phone_number}: {result}")
+            
+            if result.get('status') == 'sent':
+                data = result.get('data', {})
+                recipients = data.get('SMSMessageData', {}).get('Recipients', [])
+                
+                if recipients:
+                    sms.mark_sent(
+                        provider_message_id=recipients[0].get('messageId', ''),
+                        provider_response=result,
+                        cost=recipients[0].get('cost', None)
+                    )
+                    logger.info(f"SMS sent to {phone_number} from agrosmart")
+                else:
+                    sms.mark_failed("No recipients in response")
+                    logger.error(f"SMS failed - no recipients: {result}")
+            else:
+                sms.mark_failed(result.get('message', 'Unknown error'))
+                logger.error(f"SMS failed to {phone_number}: {result}")
+                
         except Exception as e:
-            self.logger.error(f"Error sending SMS: {str(e)}")
+            logger.error(f"Error sending SMS: {str(e)}")
+            try:
+                SMSMessage.objects.create(
+                    recipient=phone_number,
+                    message=message,
+                    status='FAILED',
+                    error_message=str(e)
+                )
+            except:
+                pass
 
     def step(self, user_input: str):
         """Process user input and return response"""
@@ -294,11 +362,14 @@ class USSDEngine:
         return CON, _menu("Agiza Pembejeo\nChagua kundi:", lines)
 
     def _handle_order_category(self, full_text: str, last_input: str):
+        idx = _parse_int(last_input)
+        if idx is None or idx < 1:
+            return CON, _error() + "\nChagua namba sahihi (1-9):"
+        idx -= 1
         try:
-            idx = int(last_input) - 1
             category_id = self.data["category_ids"][idx]
-        except:
-            return CON, _error() + "\nChagua namba sahihi:"
+        except (IndexError, KeyError):
+            return CON, _error() + "\nChagua namba sahihi (1-9):"
         
         products = list(Product.objects.filter(
             category_id=category_id, 
@@ -316,12 +387,15 @@ class USSDEngine:
         return CON, _menu("Chagua bidhaa:", lines)
 
     def _handle_order_product(self, full_text: str, last_input: str):
+        idx = _parse_int(last_input)
+        if idx is None or idx < 1:
+            return CON, _error() + "\nChagua namba sahihi ya bidhaa:"
+        idx -= 1
         try:
-            idx = int(last_input) - 1
             product_id = self.data["product_ids"][idx]
             product = Product.objects.get(id=product_id)
-        except:
-            return CON, _error()
+        except (IndexError, KeyError, Product.DoesNotExist):
+            return CON, _error() + "\nChagua namba sahihi ya bidhaa:"
         
         self.data["product_id"] = str(product.id)
         self.data["product_name"] = product.name
@@ -331,11 +405,8 @@ class USSDEngine:
         return CON, f"{product.name}\nStock: {product.stock} {product.unit}\nWeka kiasi:"
 
     def _handle_order_quantity(self, full_text: str, last_input: str):
-        try:
-            qty = int(last_input)
-            if qty <= 0:
-                raise ValueError
-        except:
+        qty = _parse_int(last_input)
+        if qty is None or qty <= 0:
             return CON, "Weka namba sahihi (mfano: 10):"
         
         if qty > self.data.get("product_stock", 0):
@@ -450,7 +521,6 @@ class USSDEngine:
     # ======================================================================
     def _start_prices(self):
         """Show market prices from database"""
-        # Get latest market prices
         latest_date = MarketPrice.objects.order_by('-price_date').values_list('price_date', flat=True).first()
         
         if latest_date:
@@ -480,7 +550,7 @@ class USSDEngine:
         )
 
     # ======================================================================
-    # 4. FIND BUYERS - WITH REGION AND CROP SELECTION (IMPROVED)
+    # 4. FIND BUYERS - WITH REGION AND CROP SELECTION
     # ======================================================================
     def _start_buyers(self):
         """Start buyer search - select region first"""
@@ -490,7 +560,6 @@ class USSDEngine:
             self._end()
             return END, "Tafadhali jisajili kwanza (chagua 1 kwenye menu kuu)."
         
-        # Get unique regions from BuyingRequest (where buyers have posted requests)
         regions = list(BuyingRequest.objects.filter(
             is_open=True,
             expiry_date__gte=timezone.now().date()
@@ -500,7 +569,6 @@ class USSDEngine:
             location=''
         ).values_list('location', flat=True).distinct()[:9])
         
-        # If no regions from BuyingRequest, get from Buyer model
         if not regions:
             regions = list(Buyer.objects.filter(
                 is_verified='VERIFIED'
@@ -510,44 +578,41 @@ class USSDEngine:
                 location=''
             ).values_list('location', flat=True).distinct()[:9])
         
-        # If still no regions, use sample regions for demo
         if not regions:
             regions = [
-                "Dar es Salaam",
-                "Morogoro", 
-                "Arusha",
-                "Mwanza",
-                "Mbeya",
-                "Tanga",
-                "Dodoma",
-                "Iringa",
-                "Kilimanjaro"
+                "Dar es Salaam", "Morogoro", "Arusha", "Mwanza", "Mbeya",
+                "Tanga", "Dodoma", "Iringa", "Kilimanjaro"
             ]
         
         self.data["regions"] = regions
         self._goto("buyer_region")
         
         lines = [f"{i+1}. {r}" for i, r in enumerate(regions[:9])]
+        lines.append("0. Rudi Menu")
         return CON, _menu("Chagua mkoa uliopo:", lines)
 
     def _handle_buyer_region(self, full_text: str, last_input: str):
-        """Handle region selection"""
+        if last_input == "0":
+            self._goto('main', keep_data=False)
+            return CON, screen_main_menu()
+
+        idx = _parse_int(last_input)
+        if idx is None or idx < 1:
+            return CON, _error() + "\nChagua namba sahihi ya mkoa:"
+        idx -= 1
         try:
-            idx = int(last_input) - 1
             region = self.data["regions"][idx]
-        except (ValueError, IndexError, KeyError):
+        except (IndexError, KeyError):
             return CON, _error() + "\nChagua namba sahihi ya mkoa:"
         
         self.data["selected_region"] = region
         
-        # Get crops available in this region from BuyingRequest
         crops = list(BuyingRequest.objects.filter(
             location__icontains=region,
             is_open=True,
             expiry_date__gte=timezone.now().date()
         ).values_list('crop', flat=True).distinct()[:9])
         
-        # If no crops from BuyingRequest, get from farmers in this region
         if not crops:
             farmers = Farmer.objects.filter(
                 region__icontains=region,
@@ -555,11 +620,9 @@ class USSDEngine:
             ).exclude(primary_crop='')
             crops = list(farmers.values_list('primary_crop', flat=True).distinct()[:9])
         
-        # If still no crops, get from MarketPrice
         if not crops:
             crops = list(MarketPrice.objects.values_list('crop', flat=True).distinct()[:9])
         
-        # If still no crops, use sample crops
         if not crops:
             crops = ["Mahindi", "Mpunga", "Maharage", "Viazi", "Nyanya", "Mtama", "Alizeti", "Kunde", "Njugu"]
         
@@ -567,32 +630,35 @@ class USSDEngine:
         self._goto("buyer_crop")
         
         lines = [f"{i+1}. {c}" for i, c in enumerate(crops[:9])]
+        lines.append("0. Rudi Menu")
         return CON, _menu(f"Mkoa: {region}\nChagua zao:", lines)
 
     def _handle_buyer_crop(self, full_text: str, last_input: str):
-        """Handle crop selection and show buyers"""
+        if last_input == "0":
+            self._goto('main', keep_data=False)
+            return CON, screen_main_menu()
+
+        idx = _parse_int(last_input)
+        if idx is None or idx < 1:
+            return CON, _error() + "\nChagua namba sahihi ya zao:"
+        idx -= 1
         try:
-            idx = int(last_input) - 1
             crop = self.data["crops"][idx]
-        except (ValueError, IndexError, KeyError):
+        except (IndexError, KeyError):
             return CON, _error() + "\nChagua namba sahihi ya zao:"
         
         region = self.data.get("selected_region", "")
         self.data["selected_crop"] = crop
         
-        # Find buyers looking for this crop
         buyers = BuyingRequest.objects.filter(
             crop__icontains=crop,
             is_open=True,
             expiry_date__gte=timezone.now().date()
         ).order_by('-created_at')[:5]
         
-        # If no real buyers, check if we have a buyer with this crop
         if not buyers:
-            # Try to find any buyer who might be interested
             buyer = Buyer.objects.filter(is_verified='VERIFIED').first()
             if buyer:
-                # Create a sample buying request display
                 self.data["buyer_ids"] = ['sample']
                 self.data["selected_crop"] = crop
                 self._goto("buyer_select")
@@ -610,7 +676,6 @@ class USSDEngine:
                     f"Jaribu tena baadaye."
                 )
         
-        # Real buyers found
         self.data["buyer_ids"] = [str(b.id) for b in buyers]
         self.data["selected_crop"] = crop
         self._goto("buyer_select")
@@ -623,54 +688,78 @@ class USSDEngine:
                 f"   {b.crop}: {b.quantity_kg}kg @ TSh {int(b.price_offered):,}\n"
                 f"   Mahali: {b.location}"
             )
+        lines.append("0. Rudi Menu")
         
         return CON, _menu(f"Wanunuzi wa {crop} katika {region}:", lines)
 
     def _handle_buyer_select(self, full_text: str, last_input: str):
-        """Handle buyer selection and send SMS to both parties"""
-        try:
-            idx = int(last_input) - 1
-            buyer_id = self.data["buyer_ids"][idx]
-        except (ValueError, IndexError, KeyError):
+        if last_input == "0":
+            self._goto('main', keep_data=False)
+            return CON, screen_main_menu()
+
+        idx = _parse_int(last_input)
+        if idx is None or idx < 1:
             return CON, _error() + "\nChagua namba sahihi ya mnunuzi:"
-        
+        idx -= 1
+        try:
+            buyer_id = self.data["buyer_ids"][idx]
+        except (IndexError, KeyError):
+            return CON, _error() + "\nChagua namba sahihi ya mnunuzi:"
+
         farmer = Farmer.objects.filter(phone_number=self.phone_number).first()
-        
         if not farmer:
             self._end()
             return END, "Tafadhali jisajili kwanza (chagua 1)."
-        
+
         crop = self.data.get("selected_crop", "")
-        region = self.data.get("selected_region", "")
-        
-        # Handle sample buyer (demo mode)
+        self.data["selected_buyer_id"] = buyer_id
+        self.data["selected_buyer_type"] = "sample" if buyer_id == 'sample' else 'request'
+        self.data["selected_crop"] = crop
+
         if buyer_id == 'sample':
             buyer = Buyer.objects.filter(is_verified='VERIFIED').first()
             buyer_name = buyer.company_name if buyer and buyer.company_name else "Mnunuzi"
             buyer_phone = buyer.phone if buyer else "0712345678"
-            
-            # Send SMS to Farmer
-            farmer_message = (
-                f"Umefanikiwa kuonyesha nia ya kuuza {crop}!\n"
-                f"Mnunuzi: {buyer_name}\n"
-                f"Simu: {buyer_phone}\n"
-                f"Bei: TSh 1,500/kg\n"
-                f"Watawasiliana nawe hivi karibuni."
-            )
-            self._send_sms(farmer.phone_number, farmer_message)
-            
-            # Send SMS to Buyer
-            if buyer_phone:
-                self._send_sms(
-                    buyer_phone,
-                    f"Mkulima ameonyesha nia ya kuuza {crop}!\n"
-                    f"Jina: {farmer.full_name}\n"
-                    f"Simu: {farmer.phone_number}\n"
-                    f"Eneo: {farmer.region}, {farmer.district}\n"
-                    f"Wasiliana naye moja kwa moja."
-                )
-            
-            # Record interest if real buyer exists
+            buyer_price = "TSh 1,500/kg"
+            self.data["selected_buyer_name"] = buyer_name
+            self.data["selected_buyer_phone"] = buyer_phone
+            self.data["selected_buyer_price"] = buyer_price
+        else:
+            try:
+                buying_request = BuyingRequest.objects.get(id=buyer_id)
+            except BuyingRequest.DoesNotExist:
+                return CON, _error() + "\nMnunuzi hapatikani. Jaribu tena."
+            buyer_name = buying_request.buyer.company_name if buying_request.buyer and buying_request.buyer.company_name else "Mnunuzi"
+            buyer_phone = buying_request.buyer.phone if buying_request.buyer else "0712345678"
+            buyer_price = f"TSh {int(buying_request.price_offered):,}/kg"
+            self.data["selected_buyer_name"] = buyer_name
+            self.data["selected_buyer_phone"] = buyer_phone
+            self.data["selected_buyer_price"] = buyer_price
+
+        self._goto("buyer_confirm")
+        return CON, self._render_buyer_confirm()
+
+    def _handle_buyer_confirm(self, full_text: str, last_input: str):
+        if last_input == '2':
+            self._goto('main', keep_data=False)
+            return CON, screen_main_menu()
+
+        if last_input != '1':
+            return CON, _error() + "\nChagua 1 kuthibitisha au 2 kughairi:"
+
+        farmer = Farmer.objects.filter(phone_number=self.phone_number).first()
+        if not farmer:
+            self._end()
+            return END, "Tafadhali jisajili kwanza (chagua 1)."
+
+        buyer_name = self.data.get("selected_buyer_name", "Mnunuzi")
+        buyer_phone = self.data.get("selected_buyer_phone", "0712345678")
+        buyer_price = self.data.get("selected_buyer_price", "")
+        crop = self.data.get("selected_crop", "")
+        buyer_type = self.data.get("selected_buyer_type", "request")
+
+        if buyer_type == 'sample':
+            buyer = Buyer.objects.filter(is_verified='VERIFIED').first()
             if buyer:
                 try:
                     buying_request = BuyingRequest.objects.filter(buyer=buyer).first()
@@ -679,55 +768,37 @@ class USSDEngine:
                             buying_request=buying_request,
                             farmer=farmer
                         )
-                except:
+                except Exception:
                     pass
-            
-            self._end()
-            return END, (
-                f"Taarifa zimewasilishwa!\n"
-                f"✓ SMS imetumwa kwako na kwa mnunuzi.\n"
-                f"✓ Mnunuzi: {buyer_name}\n"
-                f"✓ Simu: {buyer_phone}\n\n"
-                f"Wasiliana naye moja kwa moja kupanga mauzo.\n"
-                f"Piga *566# tena."
-            )
-        
-        # Handle real buyer
-        try:
-            buying_request = BuyingRequest.objects.get(id=buyer_id)
-        except BuyingRequest.DoesNotExist:
-            return CON, _error() + "\nMnunuzi hapatikani. Jaribu tena."
-        
-        # Record interest
-        InterestedFarmer.objects.get_or_create(
-            buying_request=buying_request,
-            farmer=farmer
-        )
-        
-        buyer_name = buying_request.buyer.company_name if buying_request.buyer and buying_request.buyer.company_name else "Mnunuzi"
-        buyer_phone = buying_request.buyer.phone if buying_request.buyer else "0712345678"
-        
-        # Send SMS to Farmer
+        else:
+            try:
+                buying_request = BuyingRequest.objects.get(id=self.data.get("selected_buyer_id"))
+                InterestedFarmer.objects.get_or_create(
+                    buying_request=buying_request,
+                    farmer=farmer
+                )
+            except BuyingRequest.DoesNotExist:
+                return CON, _error() + "\nMnunuzi hapatikani. Jaribu tena."
+
         farmer_message = (
             f"Umefanikiwa kuonyesha nia ya kuuza {crop}!\n"
             f"Mnunuzi: {buyer_name}\n"
             f"Simu: {buyer_phone}\n"
-            f"Bei: TSh {int(buying_request.price_offered):,}/kg\n"
+            f"Bei: {buyer_price}\n"
             f"Watawasiliana nawe hivi karibuni."
         )
         self._send_sms(farmer.phone_number, farmer_message)
-        
-        # Send SMS to Buyer
+
         if buyer_phone:
             buyer_message = (
                 f"Mkulima ameonyesha nia ya kuuza {crop}!\n"
                 f"Jina: {farmer.full_name}\n"
                 f"Simu: {farmer.phone_number}\n"
-                f"Eneo: {farmer.region}, {farmer.district}\n"
+                f"Eneo: {farmer.location_summary}\n"
                 f"Wasiliana naye moja kwa moja."
             )
             self._send_sms(buyer_phone, buyer_message)
-        
+
         self._end()
         return END, (
             f"Taarifa zimewasilishwa!\n"
@@ -739,15 +810,36 @@ class USSDEngine:
         )
 
     def _render_buyer_region(self) -> str:
-        """Re-render region selection screen"""
         lines = [f"{i+1}. {r}" for i, r in enumerate(self.data.get("regions", []))]
+        lines.append("0. Rudi Menu")
         return _menu("Chagua mkoa uliopo:", lines) if lines else screen_main_menu()
 
     def _render_buyer_crop(self) -> str:
-        """Re-render crop selection screen"""
         region = self.data.get("selected_region", "")
         lines = [f"{i+1}. {c}" for i, c in enumerate(self.data.get("crops", []))]
+        lines.append("0. Rudi Menu")
         return _menu(f"Mkoa: {region}\nChagua zao:", lines) if lines else screen_main_menu()
+
+    def _render_buyer_select(self) -> str:
+        crop = self.data.get("selected_crop", "")
+        region = self.data.get("selected_region", "")
+        buyers = self.data.get("buyer_ids", [])
+        lines = []
+        for i, _ in enumerate(buyers, 1):
+            buyer_label = f"Mnunuzi {i}"
+            lines.append(f"{i}. {buyer_label}")
+        lines.append("0. Rudi Menu")
+        return _menu(f"Wanunuzi wa {crop} katika {region}:", lines)
+
+    def _render_buyer_confirm(self) -> str:
+        return (
+            f"Thibitisha Mnunuzi\n"
+            f"{self.data.get('selected_buyer_name', '')}\n"
+            f"Simu: {self.data.get('selected_buyer_phone', '')}\n"
+            f"{self.data.get('selected_crop', '')}: {self.data.get('selected_buyer_price', '')}\n"
+            f"1. Thibitisha\n"
+            f"2. Ghairi"
+        )
 
     # ======================================================================
     # 5. FARMING ADVICE
@@ -763,7 +855,6 @@ class USSDEngine:
         ])
 
     def _handle_advice(self, full_text: str, last_input: str):
-        # Try to get advice from database
         category_map = {
             '1': 'GENERAL',
             '2': 'PEST',
@@ -785,7 +876,6 @@ class USSDEngine:
                 self._end()
                 return END, f"{advice.title}\n{advice.content[:300]}\n\nPiga *566# tena."
         
-        # Default advice if no database records
         default_msgs = {
             '1': "Ushauri wa Jumla:\n- Panda wakati wa mvua\n- Tumia mbegu bora\n- Palilia mara kwa mara\n- Vuna kwa wakati",
             '2': "Udhibiti wa Wadudu:\n- Tumia dawa asilia\n- Panda mazao mchanganyiko\n- Angalia shamba mara kwa mara",
@@ -803,13 +893,21 @@ class USSDEngine:
     # 6. WEATHER
     # ======================================================================
     def _start_weather(self):
-        self._end()
         farmer = Farmer.objects.filter(phone_number=self.phone_number).first()
-        region = farmer.region if farmer else "Tanzania"
+        if not farmer or not farmer.region:
+            self._goto('weather_region')
+            return CON, "Andika mkoa wako kwa taarifa za hali ya hewa:"
         
-        # Try to get weather from database
+        return self._show_weather(region=farmer.region)
+
+    def _handle_weather_region(self, full_text: str, last_input: str):
+        if not last_input or len(last_input.strip()) < 2:
+            return CON, "Andika mkoa wako (mfano: Morogoro):"
+        return self._show_weather(region=last_input.strip())
+
+    def _show_weather(self, region: str):
+        self._end()
         weather = WeatherData.objects.filter(region__icontains=region).order_by('-fetched_at').first()
-        
         if weather:
             return END, (
                 f"Hali ya Hewa - {region}\n"
@@ -818,7 +916,6 @@ class USSDEngine:
                 f"Hali: {weather.condition}\n"
                 f"Piga *566# tena."
             )
-        
         return END, (
             f"Hali ya Hewa - {region}\n"
             f"Joto: 28°C\n"
@@ -828,82 +925,221 @@ class USSDEngine:
         )
 
     # ======================================================================
-    # 7. FINANCIAL SERVICES
+    # 7. FINANCIAL SERVICES - COMPLETE LOAN FLOW
     # ======================================================================
     def _start_financial(self):
-        self._goto("financial")
-        return CON, _menu("Huduma za Kifedha", [
-            "1. Taarifa za Mikopo",
-            "2. Omba Mkopo",
-            "3. Rudi Menu"
-        ])
-
-    def _handle_financial(self, full_text: str, last_input: str):
-        if last_input == '1':
-            self._end()
-            # Get loan products from database
-            products = LoanProduct.objects.filter(is_active=True)[:5]
-            if products:
-                lines = []
-                for p in products:
-                    lines.append(f"{p.name}: Riba {p.interest_rate}%")
-                    lines.append(f"  TSh {int(p.min_amount):,} - {int(p.max_amount):,}")
-                    lines.append(f"  Muda: {p.duration_months} miezi")
-                    lines.append("")
-                return END, (
-                    "Mikopo Inapatikana:\n" + 
-                    "\n".join(lines) + 
-                    "\nTembelea ofisi yetu kwa maelezo zaidi."
-                )
-            return END, "Mikopo: SACCOS 12%, Benki 15%.\nTembelea ofisi yetu kwa maelezo."
-        elif last_input == '2':
-            return self._start_loan_apply()
-        elif last_input == '3':
-            self._goto('main')
-            return CON, screen_main_menu()
-        else:
-            return CON, _error()
-
-    def _start_loan_apply(self):
+        """Start financial services - show loan products"""
         farmer = Farmer.objects.filter(phone_number=self.phone_number).first()
+        
         if not farmer:
             self._end()
-            return END, "Jisajili kwanza (chagua 1)."
+            return END, "Tafadhali jisajili kwanza (chagua 1 kwenye menu kuu)."
         
-        self._goto("loan_amount")
-        return CON, "Omba Mkopo\nWeka kiasi unachotaka (TSh):"
+        if not farmer.full_name:
+            self._end()
+            return END, "Tafadhali kamilisha usajili wako kwanza."
+        
+        # Get available loan products
+        products = LoanProduct.objects.filter(is_active=True)[:9]
+        
+        if not products:
+            self._end()
+            return END, (
+                "Samahani, hakuna bidhaa za mkopo kwa sasa.\n"
+                "Tembelea ofisi yetu kwa maelezo zaidi."
+            )
+        
+        self.data["loan_products"] = []
+        for p in products:
+            self.data["loan_products"].append({
+                'id': str(p.id),
+                'name': p.name,
+                'interest': str(p.interest_rate),
+                'min': str(p.min_amount),
+                'max': str(p.max_amount),
+                'duration': str(p.duration_months)
+            })
+        
+        self._goto("financial_products")
+        lines = []
+        for i, p in enumerate(products[:9], 1):
+            lines.append(
+                f"{i}. {p.name}\n"
+                f"   Riba: {p.interest_rate}% | Muda: {p.duration_months}m"
+            )
+        lines.append("0. Rudi Menu")
+        
+        return CON, _menu("Huduma za Kifedha\nChagua bidhaa ya mkopo:", lines)
 
-    def _handle_loan_amount(self, full_text: str, last_input: str):
+    def _handle_financial_products(self, full_text: str, last_input: str):
+        """Handle loan product selection"""
+        if last_input == '0':
+            self._goto('main')
+            return CON, screen_main_menu()
+        
+        idx = _parse_int(last_input)
+        if idx is None or idx < 1:
+            return CON, _error() + "\nChagua namba sahihi ya bidhaa:"
+        idx -= 1
         try:
-            amount = Decimal(last_input)
-            if amount <= 0:
-                raise ValueError
-        except:
+            product_data = self.data["loan_products"][idx]
+        except (IndexError, KeyError):
+            return CON, _error() + "\nChagua namba sahihi ya bidhaa:"
+        
+        self.data["selected_product_id"] = product_data['id']
+        self.data["selected_product_name"] = product_data['name']
+        self.data["selected_product_min"] = product_data['min']
+        self.data["selected_product_max"] = product_data['max']
+        self.data["selected_product_interest"] = product_data['interest']
+        self.data["selected_product_duration"] = product_data['duration']
+        
+        self._goto("financial_amount")
+        return CON, (
+            f"{self.data['selected_product_name']}\n"
+            f"Riba: {self.data['selected_product_interest']}%\n"
+            f"Muda: {self.data['selected_product_duration']} miezi\n"
+            f"Kiwango: TSh {int(Decimal(self.data['selected_product_min'])):,} - {int(Decimal(self.data['selected_product_max'])):,}\n"
+            f"Weka kiasi unachotaka (TSh):"
+        )
+
+    def _handle_financial_amount(self, full_text: str, last_input: str):
+        """Handle loan amount input"""
+        amount = _parse_decimal(last_input)
+        if amount is None or amount <= 0:
             return CON, "Andika kiasi sahihi (mfano: 1000000):"
         
-        farmer = Farmer.objects.get(phone_number=self.phone_number)
+        min_amount = Decimal(self.data["selected_product_min"])
+        max_amount = Decimal(self.data["selected_product_max"])
+        if amount < min_amount:
+            return CON, f"Kiasi cha chini ni TSh {int(min_amount):,}. Weka kiasi kingine:"
+        
+        if amount > max_amount:
+            return CON, f"Kiasi cha juu ni TSh {int(max_amount):,}. Weka kiasi kingine:"
+        
+        self.data["loan_amount"] = str(amount)
+        self._goto("financial_purpose")
+        return CON, (
+            f"Kiasi: TSh {int(amount):,}\n"
+            f"Weka sababu ya mkopo (mfano: Kununua pembejeo):"
+        )
+
+    def _handle_financial_purpose(self, full_text: str, last_input: str):
+        """Handle loan purpose input"""
+        if not last_input or len(last_input.strip()) < 3:
+            return CON, "Andika sababu ya mkopo (herufi 3 au zaidi):"
+        
+        self.data["loan_purpose"] = last_input.strip()
+        self._goto("financial_confirm")
+        return CON, (
+            f"Thibitisha Ombi la Mkopo\n"
+            f"Bidhaa: {self.data['selected_product_name']}\n"
+            f"Kiasi: TSh {int(Decimal(self.data['loan_amount'])):,}\n"
+            f"Sababu: {self.data['loan_purpose']}\n"
+            f"1. Thibitisha\n2. Ghairi"
+        )
+
+    def _handle_financial_confirm(self, full_text: str, last_input: str):
+        """Handle loan confirmation"""
+        if last_input == '2':
+            self._end()
+            return END, "Ombi la mkopo limeghairiwa. Piga *566# tena."
+        
+        if last_input != '1':
+            return CON, _error() + "\nChagua 1 kuthibitisha au 2 kughairi:"
+        
+        farmer = Farmer.objects.filter(phone_number=self.phone_number).first()
+        
+        if not farmer:
+            self._end()
+            return END, "Tafadhali jisajili kwanza (chagua 1)."
         
         try:
-            LoanApplication.objects.create(
+            # Get loan product
+            product = LoanProduct.objects.get(id=self.data["selected_product_id"])
+            
+            # Create loan application
+            application = LoanApplication.objects.create(
                 farmer=farmer,
-                amount=amount,
+                loan_product=product,
+                amount=Decimal(self.data["loan_amount"]),
                 status='PENDING',
-                purpose="USSD Application"
+                purpose=self.data["loan_purpose"]
             )
             
-            self._send_sms(
-                farmer.phone_number,
-                f"Ombi lako la mkopo TSh {int(amount):,} limepokelewa."
+            # Send SMS to Farmer
+            farmer_message = (
+                f"Ombi lako la mkopo la TSh {int(Decimal(self.data['loan_amount'])):,} "
+                f"kwa {product.name} limepokelewa!\n"
+                f"Tutakujulisha baada ya siku 2-3.\n"
+                f"Kumbukumbu: #{application.id}"
+            )
+            self._send_sms(farmer.phone_number, farmer_message)
+            
+            # Send SMS to Financial Institution (if exists)
+            if product.institution and product.institution.phone:
+                institution_message = (
+                    f"Ombi jipya la mkopo limepokelewa!\n"
+                    f"Mkulima: {farmer.full_name}\n"
+                    f"Simu: {farmer.phone_number}\n"
+                    f"Bidhaa: {product.name}\n"
+                    f"Kiasi: TSh {int(Decimal(self.data['loan_amount'])):,}\n"
+                    f"Sababu: {self.data['loan_purpose']}"
+                )
+                self._send_sms(product.institution.phone, institution_message)
+            
+            self._end()
+            return END, (
+                f"✓ Ombi lako limepokelewa!\n"
+                f"Bidhaa: {product.name}\n"
+                f"Kiasi: TSh {int(Decimal(self.data['loan_amount'])):,}\n"
+                f"Kumbukumbu: #{application.id}\n\n"
+                f"Tutakujulisha baada ya siku 2-3.\n"
+                f"Piga *566# tena."
             )
             
         except Exception as e:
-            self.logger.error(f"Loan error: {str(e)}")
+            self.logger.error(f"Loan application error: {str(e)}")
             self._end()
-            return END, "Samahani, ombi halikufanikiwa. Jaribu tena."
+            return END, (
+                "Samahani, ombi halikufanikiwa.\n"
+                "Jaribu tena baadaye au tembelea ofisi yetu."
+            )
 
-        self._end()
-        return END, (
-            f"Ombi lako la mkopo TSh {int(amount):,} limepokelewa!\n"
-            f"Tutakujulisha baada ya siku 2-3.\n"
-            f"Piga *566# tena."
+    def _render_financial_products(self) -> str:
+        """Re-render financial products selection screen"""
+        products = self.data.get("loan_products", [])
+        lines = []
+        for i, p in enumerate(products[:9], 1):
+            lines.append(
+                f"{i}. {p['name']}\n"
+                f"   Riba: {p['interest']}% | Muda: {p['duration']}m"
+            )
+        lines.append("0. Rudi Menu")
+        return _menu("Huduma za Kifedha\nChagua bidhaa ya mkopo:", lines)
+
+    def _render_financial_amount(self) -> str:
+        """Re-render loan amount screen"""
+        return (
+            f"{self.data['selected_product_name']}\n"
+            f"Riba: {self.data['selected_product_interest']}%\n"
+            f"Muda: {self.data['selected_product_duration']} miezi\n"
+            f"Kiwango: TSh {int(Decimal(self.data['selected_product_min'])):,} - {int(Decimal(self.data['selected_product_max'])):,}\n"
+            f"Weka kiasi unachotaka (TSh):"
+        )
+
+    def _render_financial_purpose(self) -> str:
+        """Re-render loan purpose screen"""
+        return (
+            f"Kiasi: TSh {int(Decimal(self.data['loan_amount'])):,}\n"
+            f"Weka sababu ya mkopo (mfano: Kununua pembejeo):"
+        )
+
+    def _render_financial_confirm(self) -> str:
+        """Re-render loan confirmation screen"""
+        return (
+            f"Thibitisha Ombi la Mkopo\n"
+            f"Bidhaa: {self.data['selected_product_name']}\n"
+            f"Kiasi: TSh {int(Decimal(self.data['loan_amount'])):,}\n"
+            f"Sababu: {self.data['loan_purpose']}\n"
+            f"1. Thibitisha\n2. Ghairi"
         )

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Loan Applications - Financial Institution{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1"><i class="bi bi-file-earmark-text text-success me-2"></i>Loan Applications</h2>
+                    <p class="text-muted">Manage loan applications</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="btn-group flex-wrap gap-1">
+                <a href="{% url 'financial_applications' %}" class="btn btn-outline-primary {% if not status %}active{% endif %}">
+                    All ({{ status_counts.PENDING|add:status_counts.APPROVED|add:status_counts.DISBURSED|add:status_counts.REJECTED }})
+                </a>
+                <a href="?status=PENDING" class="btn btn-outline-warning {% if status == 'PENDING' %}active{% endif %}">
+                    Pending ({{ status_counts.PENDING }})
+                </a>
+                <a href="?status=APPROVED" class="btn btn-outline-success {% if status == 'APPROVED' %}active{% endif %}">
+                    Approved ({{ status_counts.APPROVED }})
+                </a>
+                <a href="?status=DISBURSED" class="btn btn-outline-info {% if status == 'DISBURSED' %}active{% endif %}">
+                    Disbursed ({{ status_counts.DISBURSED }})
+                </a>
+                <a href="?status=REJECTED" class="btn btn-outline-danger {% if status == 'REJECTED' %}active{% endif %}">
+                    Rejected ({{ status_counts.REJECTED }})
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if applications %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Farmer</th>
+                                <th>Product</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                                <tr>
+                                    <td>{{ app.farmer.full_name|default:"-" }}</td>
+                                    <td>{{ app.loan_product.name|default:"-" }}</td>
+                                    <td>TSh {{ app.amount|floatformat:0 }}</td>
+                                    <td>
+                                        <span class="badge {% if app.status == 'PENDING' %}bg-warning{% elif app.status == 'APPROVED' %}bg-success{% elif app.status == 'DISBURSED' %}bg-info{% elif app.status == 'REJECTED' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ app.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ app.created_at|date:"d M Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'financial_application_detail' app.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if applications.has_other_pages %}
+                    <nav class="mt-3">
+                        <ul class="pagination justify-content-center">
+                            {% if applications.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ applications.previous_page_number }}{% if status %}&status={{ status }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+                            {% for num in applications.paginator.page_range %}
+                                <li class="page-item {% if applications.number == num %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ num }}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endfor %}
+                            {% if applications.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ applications.next_page_number }}{% if status %}&status={{ status }}{% endif %}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted d-block mb-3"></i>
+                    <h5 class="text-muted">No loan applications</h5>
+                    <p class="text-muted small">Applications will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

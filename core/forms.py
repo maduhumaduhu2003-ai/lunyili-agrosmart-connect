@@ -334,3 +334,148 @@ class AdviceForm(forms.ModelForm):
         self.fields['title'].required = True
         self.fields['content'].required = True
         self.fields['category'].required = True
+        
+        
+from django import forms
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from .models import (
+    User, Product, Category, Supplier, Buyer, BuyingRequest,
+    ExtensionOfficer, Advice, FinancialInstitution, LoanProduct, LoanApplication
+)
+
+
+# ... (RegisterForm, LoginForm, UserProfileForm, ProductForm, SupplierProfileForm, 
+#      BuyerProfileForm, OrderForm, BuyingRequestForm, ExtensionOfficerProfileForm, 
+#      AdviceForm zibaki sawa) ...
+
+
+class FinancialInstitutionProfileForm(forms.ModelForm):
+    """Form for creating financial institution profile"""
+    
+    class Meta:
+        model = FinancialInstitution
+        fields = ['institution_name', 'institution_type', 'phone', 'email', 'address', 'logo']
+        widgets = {
+            'institution_name': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Enter institution name'
+            }),
+            'institution_type': forms.Select(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Phone number'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Email address'
+            }),
+            'address': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'rows': 2, 
+                'placeholder': 'Physical address'
+            }),
+            'logo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['institution_name'].required = True
+        self.fields['institution_type'].required = True
+        self.fields['phone'].required = True
+        
+        # Institution type choices
+        self.fields['institution_type'].choices = [
+            ('', 'Select institution type'),
+            ('BANK', 'Bank'),
+            ('SACCOS', 'SACCOS'),
+            ('MFI', 'Microfinance Institution'),
+        ]
+
+
+class LoanProductForm(forms.ModelForm):
+    """Form for creating/editing loan products"""
+    
+    class Meta:
+        model = LoanProduct
+        fields = ['name', 'interest_rate', 'min_amount', 'max_amount', 'duration_months', 'description', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Enter loan product name'
+            }),
+            'interest_rate': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Interest rate %',
+                'step': '0.01'
+            }),
+            'min_amount': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Minimum amount (TSh)'
+            }),
+            'max_amount': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Maximum amount (TSh)'
+            }),
+            'duration_months': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Duration in months'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'rows': 3, 
+                'placeholder': 'Product description'
+            }),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].required = True
+        self.fields['interest_rate'].required = True
+        self.fields['min_amount'].required = True
+        self.fields['max_amount'].required = True
+        self.fields['duration_months'].required = True
+        
+        # Validate min_amount < max_amount
+        self.fields['min_amount'].help_text = "Must be less than maximum amount"
+        self.fields['max_amount'].help_text = "Must be greater than minimum amount"
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        min_amount = cleaned_data.get('min_amount')
+        max_amount = cleaned_data.get('max_amount')
+        
+        if min_amount and max_amount:
+            if min_amount >= max_amount:
+                raise ValidationError(
+                    "Minimum amount must be less than maximum amount."
+                )
+        return cleaned_data
+
+
+class LoanApplicationForm(forms.ModelForm):
+    """Form for updating loan application status"""
+    
+    class Meta:
+        model = LoanApplication
+        fields = ['status', 'remarks']
+        widgets = {
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'remarks': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'rows': 3, 
+                'placeholder': 'Add remarks...'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['status'].choices = [
+            ('PENDING', 'Pending'),
+            ('APPROVED', 'Approved'),
+            ('DISBURSED', 'Disbursed'),
+            ('REJECTED', 'Rejected'),
+        ]

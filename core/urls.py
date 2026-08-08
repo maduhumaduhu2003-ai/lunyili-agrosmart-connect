@@ -16,7 +16,15 @@ from .views_extension import (
     extension_advice_delete, extension_advice_toggle, extension_advice_detail,
     extension_farmers, extension_farmer_detail
 )
+from .views_financial import (
+    financial_profile_create, financial_dashboard,
+    financial_loan_products, financial_loan_product_create,
+    financial_loan_product_edit, financial_loan_product_delete,
+    financial_applications, financial_application_detail
+)
 from .views_ussd import sms_callback, ussd_callback
+
+
 
 
 urlpatterns = [
@@ -58,6 +66,16 @@ urlpatterns = [
     path('extension/advice/<uuid:advice_id>/toggle/', extension_advice_toggle, name='extension_advice_toggle'),
     path('extension/farmers/', extension_farmers, name='extension_farmers'),
     path('extension/farmers/<uuid:farmer_id>/', extension_farmer_detail, name='extension_farmer_detail'),
+    
+    # Financial Institution URLs
+    path('financial/profile/create/', financial_profile_create, name='financial_profile_create'),
+    path('financial/dashboard/', financial_dashboard, name='financial_dashboard'),
+    path('financial/loan-products/', financial_loan_products, name='financial_loan_products'),
+    path('financial/loan-products/create/', financial_loan_product_create, name='financial_loan_product_create'),
+    path('financial/loan-products/<uuid:product_id>/edit/', financial_loan_product_edit, name='financial_loan_product_edit'),
+    path('financial/loan-products/<uuid:product_id>/delete/', financial_loan_product_delete, name='financial_loan_product_delete'),
+    path('financial/applications/', financial_applications, name='financial_applications'),
+    path('financial/applications/<uuid:application_id>/', financial_application_detail, name='financial_application_detail'),
     
     # USSD endpoints
     path('ussd/', ussd_callback, name='ussd_callback'),
