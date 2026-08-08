@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ advice.title }} - Extension Officer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1"><i class="bi bi-file-text text-success me-2"></i>{{ advice.title }}</h2>
+                    <p class="text-muted">{{ advice.created_at|date:"d M Y" }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'extension_advice' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {% if advice.image %}
+                        <img src="{{ advice.image.url }}" alt="{{ advice.title }}" class="img-fluid rounded mb-3">
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-secondary">{{ advice.get_category_display }}</span>
+                        {% if advice.crop %}
+                            <span class="badge bg-info">{{ advice.crop }}</span>
+                        {% endif %}
+                        <span class="badge {% if advice.is_published %}bg-success{% else %}bg-warning{% endif %}">
+                            {% if advice.is_published %}Published{% else %}Draft{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Content</h5>
+                        <p class="text-muted">{{ advice.content|linebreaks }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Details</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Category:</strong> {{ advice.get_category_display }}</p>
+                    <p class="mb-1"><strong>Crop:</strong> {{ advice.crop|default:"General" }}</p>
+                    <p class="mb-1"><strong>Status:</strong> 
+                        <span class="badge {% if advice.is_published %}bg-success{% else %}bg-warning{% endif %}">
+                            {% if advice.is_published %}Published{% else %}Draft{% endif %}
+                        </span>
+                    </p>
+                    <p class="mb-1"><strong>Created:</strong> {{ advice.created_at|date:"d M Y" }}</p>
+                    <p class="mb-0"><strong>Last Updated:</strong> {{ advice.updated_at|date:"d M Y" }}</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'extension_advice_edit' advice.id %}" class="btn btn-warning">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                        <a href="{% url 'extension_advice_toggle' advice.id %}" class="btn btn-{% if advice.is_published %}secondary{% else %}success{% endif %}">
+                            <i class="bi bi-{% if advice.is_published %}eye-slash{% else %}eye{% endif %} me-1"></i>
+                            {% if advice.is_published %}Unpublish{% else %}Publish{% endif %}
+                        </a>
+                        <a href="{% url 'extension_advice_delete' advice.id %}" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

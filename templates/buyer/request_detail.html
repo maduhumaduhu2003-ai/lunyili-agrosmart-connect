@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Detail - Buyer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1"><i class="bi bi-file-earmark-text text-success me-2"></i>Request Detail</h2>
+                    <p class="text-muted">View buying request details</p>
+                </div>
+                <a href="{% url 'buyer_requests' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Requests
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Request Information -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Request Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Crop</div>
+                        <div class="col-8">{{ buying_request.crop }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Quantity</div>
+                        <div class="col-8">{{ buying_request.quantity_kg }} kg</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Price Offered</div>
+                        <div class="col-8">TSh {{ buying_request.price_offered|floatformat:0 }}/kg</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Location</div>
+                        <div class="col-8">{{ buying_request.location }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Expiry Date</div>
+                        <div class="col-8">{{ buying_request.expiry_date|date:"d M Y" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Status</div>
+                        <div class="col-8">
+                            <span class="badge {% if buying_request.is_open %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if buying_request.is_open %}Open{% else %}Closed{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Created</div>
+                        <div class="col-8">{{ buying_request.created_at|date:"d M Y H:i" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interested Farmers -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Interested Farmers</h5>
+                    <span class="badge bg-info">{{ interested_farmers|length }} farmers</span>
+                </div>
+                <div class="card-body">
+                    {% if interested_farmers %}
+                        <div class="list-group list-group-flush">
+                            {% for farmer in interested_farmers %}
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="d-flex align-items-center mb-1">
+                                                <div class="bg-success rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                                     style="width: 32px; height: 32px;">
+                                                    <i class="bi bi-person text-white small"></i>
+                                                </div>
+                                                <strong>{{ farmer.farmer.full_name }}</strong>
+                                            </div>
+                                            <div class="small text-muted">
+                                                <p class="mb-1">
+                                                    <i class="bi bi-telephone me-1"></i> 
+                                                    <a href="tel:{{ farmer.farmer.phone_number }}" class="text-decoration-none">
+                                                        {{ farmer.farmer.phone_number }}
+                                                    </a>
+                                                </p>
+                                                <p class="mb-0">
+                                                    <i class="bi bi-geo-alt me-1"></i> 
+                                                    {{ farmer.farmer.region }}{% if farmer.farmer.district %}, {{ farmer.farmer.district }}{% endif %}
+                                                </p>
+                                                {% if farmer.farmer.primary_crop %}
+                                                    <p class="mb-0">
+                                                        <i class="bi bi-tree me-1"></i> 
+                                                        Zao: {{ farmer.farmer.primary_crop }}
+                                                    </p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success mb-1">Interested</span>
+                                            <br>
+                                            <small class="text-muted">{{ farmer.created_at|timesince }} ago</small>
+                                            <br>
+                                            <a href="tel:{{ farmer.farmer.phone_number }}" class="btn btn-sm btn-success mt-1">
+                                                <i class="bi bi-phone"></i> Call
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-people display-4 text-muted d-block mb-2"></i>
+                            <h6 class="text-muted">No farmers have shown interest yet</h6>
+                            <p class="text-muted small">Farmers will appear here when they respond to your request.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'buyer_request_edit' buying_request.id %}" class="btn btn-warning">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                        <a href="{% url 'buyer_request_delete' buying_request.id %}" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> Delete
+                        </a>
+                        {% if buying_request.is_open %}
+                            <form method="post" action="{% url 'buyer_request_toggle' buying_request.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-1"></i> Close
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'buyer_request_toggle' buying_request.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-1"></i> Re-open
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

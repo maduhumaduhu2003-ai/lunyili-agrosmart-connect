@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}My Advice - Extension Officer{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1"><i class="bi bi-file-text text-success me-2"></i>My Advice</h2>
+                    <p class="text-muted">Manage your farming advice articles</p>
+                </div>
+                <a href="{% url 'extension_advice_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i> New Advice
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="btn-group flex-wrap gap-1">
+                <a href="{% url 'extension_advice' %}" class="btn btn-outline-primary {% if not status %}active{% endif %}">
+                    All ({{ status_counts.published|add:status_counts.draft }})
+                </a>
+                <a href="?status=published" class="btn btn-outline-success {% if status == 'published' %}active{% endif %}">
+                    Published ({{ status_counts.published }})
+                </a>
+                <a href="?status=draft" class="btn btn-outline-warning {% if status == 'draft' %}active{% endif %}">
+                    Draft ({{ status_counts.draft }})
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advice Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if advice %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Crop</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in advice %}
+                                <tr>
+                                    <td><span class="fw-bold">{{ item.title }}</span></td>
+                                    <td>{{ item.get_category_display }}</td>
+                                    <td>{{ item.crop|default:"-" }}</td>
+                                    <td>
+                                        <span class="badge {% if item.is_published %}bg-success{% else %}bg-warning{% endif %}">
+                                            {% if item.is_published %}Published{% else %}Draft{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.created_at|date:"d M Y" }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'extension_advice_detail' item.id %}" class="btn btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'extension_advice_edit' item.id %}" class="btn btn-outline-warning">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'extension_advice_toggle' item.id %}" class="btn btn-outline-{% if item.is_published %}secondary{% else %}success{% endif %}">
+                                                <i class="bi bi-{% if item.is_published %}eye-slash{% else %}eye{% endif %}"></i>
+                                            </a>
+                                            <a href="{% url 'extension_advice_delete' item.id %}" class="btn btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if advice.has_other_pages %}
+                    <nav class="mt-3">
+                        <ul class="pagination justify-content-center">
+                            {% if advice.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ advice.previous_page_number }}{% if status %}&status={{ status }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+                            {% for num in advice.paginator.page_range %}
+                                <li class="page-item {% if advice.number == num %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ num }}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endfor %}
+                            {% if advice.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ advice.next_page_number }}{% if status %}&status={{ status }}{% endif %}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-file-text display-1 text-muted d-block mb-3"></i>
+                    <h5 class="text-muted">No advice articles yet</h5>
+                    <p class="text-muted small">Start writing advice for farmers.</p>
+                    <a href="{% url 'extension_advice_create' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-1"></i> Write Your First Advice
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

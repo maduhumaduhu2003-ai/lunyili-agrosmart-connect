@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome - AgroSimple{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-success text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="bi bi-tree"></i> AgroSimple
+                </h1>
+                <p class="lead mb-4">
+                    Connect farmers, suppliers, and buyers in one simple platform. 
+                    Empowering agriculture through technology.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4">
+                        <i class="bi bi-person-plus"></i> Get Started
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-plant display-1"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Why AgroSimple?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 text-center">
+                    <div class="card-body">
+                        <i class="bi bi-shop display-4 text-success"></i>
+                        <h5 class="card-title mt-3">Buy & Sell</h5>
+                        <p class="card-text text-muted">
+                            Connect directly with farmers, suppliers, and buyers in your area.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 text-center">
+                    <div class="card-body">
+                        <i class="bi bi-credit-card display-4 text-success"></i>
+                        <h5 class="card-title mt-3">Easy Payments</h5>
+                        <p class="card-text text-muted">
+                            Secure and simple payment processing for all transactions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 text-center">
+                    <div class="card-body">
+                        <i class="bi bi-chat-dots display-4 text-success"></i>
+                        <h5 class="card-title mt-3">Farming Advice</h5>
+                        <p class="card-text text-muted">
+                            Get expert advice and weather updates for better farming.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                     style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">
+                    1
+                </div>
+                <h6 class="mt-3">Create Account</h6>
+                <p class="text-muted small">Sign up as farmer, supplier, or buyer</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                     style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">
+                    2
+                </div>
+                <h6 class="mt-3">Connect</h6>
+                <p class="text-muted small">Find partners and products in your area</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                     style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">
+                    3
+                </div>
+                <h6 class="mt-3">Transact</h6>
+                <p class="text-muted small">Buy, sell, and manage orders easily</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                     style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">
+                    4
+                </div>
+                <h6 class="mt-3">Grow</h6>
+                <p class="text-muted small">Expand your agricultural business</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-success text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <h2 class="display-4 fw-bold">100+</h2>
+                <p>Farmers Registered</p>
+            </div>
+            <div class="col-md-3">
+                <h2 class="display-4 fw-bold">50+</h2>
+                <p>Suppliers</p>
+            </div>
+            <div class="col-md-3">
+                <h2 class="display-4 fw-bold">200+</h2>
+                <p>Products Listed</p>
+            </div>
+            <div class="col-md-3">
+                <h2 class="display-4 fw-bold">500+</h2>
+                <p>Orders Completed</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Get Started?</h2>
+        <p class="lead text-muted mb-4">
+            Join AgroSimple today and be part of the agricultural revolution.
+        </p>
+        <a href="{% url 'register' %}" class="btn btn-success btn-lg px-5">
+            <i class="bi bi-person-plus"></i> Create Free Account
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #2d6a4f, #40916c);
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .step-number {
+        background: linear-gradient(135deg, #2d6a4f, #40916c);
+    }
+    
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+    }
+    
+    .display-1 {
+        font-size: 6rem;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-section {
+            min-height: 40vh;
+            text-align: center;
+        }
+        .display-1 {
+            font-size: 4rem;
+        }
+    }
+</style>
+{% endblock %}

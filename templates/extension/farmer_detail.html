@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Farmer Details - Extension Officer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1"><i class="bi bi-person text-success me-2"></i>Farmer Details</h2>
+                    <p class="text-muted">{{ farmer.full_name }}</p>
+                </div>
+                <a href="{% url 'extension_farmers' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Farmers
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Full Name</div>
+                        <div class="col-8">{{ farmer.full_name }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Phone</div>
+                        <div class="col-8">{{ farmer.phone_number }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Gender</div>
+                        <div class="col-8">{{ farmer.get_gender_display|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Registered Via</div>
+                        <div class="col-8">{{ farmer.registered_via }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Registered</div>
+                        <div class="col-8">{{ farmer.created_at|date:"d M Y" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Location & Farm</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Region</div>
+                        <div class="col-8">{{ farmer.region|default:"-" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">District</div>
+                        <div class="col-8">{{ farmer.district|default:"-" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Ward</div>
+                        <div class="col-8">{{ farmer.ward|default:"-" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Village</div>
+                        <div class="col-8">{{ farmer.village|default:"-" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Farm Size</div>
+                        <div class="col-8">{{ farmer.farm_size_acres|default:"-" }} acres</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Primary Crop</div>
+                        <div class="col-8">{{ farmer.primary_crop|default:"-" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
