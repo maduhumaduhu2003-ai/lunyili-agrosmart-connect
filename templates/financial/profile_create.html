@@ -3,41 +3,485 @@
 {% block title %}Create Financial Institution Profile - AgroSimple{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-bank text-success me-2"></i>Create Financial Institution Profile</h5>
+
+<div class="financial-profile-page">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+        <!-- =========================================================
+             PAGE HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header">
+
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Financial Institution
                 </div>
-                <div class="card-body">
-                    <p class="text-muted mb-4">Complete your profile to start offering loan products.</p>
-                    <form method="post" enctype="multipart/form-data">
+
+                <h1 class="dashboard-title">
+                    Create Financial Institution Profile
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-bank me-1"></i>
+                    Complete your profile to start offering loan products
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a href="{% url 'dashboard' %}" class="dashboard-action secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- =========================================================
+             FORM
+        ========================================================== -->
+
+        <div class="dashboard-grid single-column">
+
+            <div class="dashboard-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-title">
+                            <span class="panel-title-icon">
+                                <i class="bi bi-bank"></i>
+                            </span>
+                            Institution Information
+                        </div>
+                        <p class="panel-subtitle">
+                            Provide your institution details
+                        </p>
+                    </div>
+                </div>
+
+                <div class="panel-body">
+
+                    <!-- User Info Display -->
+                    <div class="user-info-card">
+                        <div class="user-info-header">
+                            <i class="bi bi-person-circle"></i>
+                            <div>
+                                <strong>{{ user.full_name }}</strong>
+                                <span>{{ user.get_role_display }}</span>
+                            </div>
+                        </div>
+                        <div class="user-info-details">
+                            <span>
+                                <i class="bi bi-envelope"></i>
+                                {{ user.email|default:"No email" }}
+                            </span>
+                            <span>
+                                <i class="bi bi-phone"></i>
+                                {{ user.phone|default:"No phone" }}
+                            </span>
+                        </div>
+                        <p class="user-info-note">
+                            <i class="bi bi-info-circle"></i>
+                            Phone and email are automatically taken from your account.
+                            Update them in your <a href="{% url 'profile' %}">profile settings</a>.
+                        </p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" data-loading="true" 
+                          data-loading-title="Creating Profile" 
+                          data-loading-message="Setting up your institution account...">
                         {% csrf_token %}
+
                         {% for field in form %}
-                            <div class="mb-3">
+                            <div class="form-group">
                                 <label for="{{ field.id_for_label }}" class="form-label">
                                     {{ field.label }}
                                     {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
                                 </label>
                                 {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
                                 {% if field.errors %}
                                     <div class="text-danger small mt-1">{{ field.errors }}</div>
                                 {% endif %}
                             </div>
                         {% endfor %}
-                        <div class="d-grid gap-2">
+
+                        <div class="form-actions">
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-check-circle me-1"></i> Create Profile
                             </button>
                             <a href="{% url 'dashboard' %}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                                <i class="bi bi-arrow-left me-1"></i> Back
                             </a>
                         </div>
                     </form>
+
                 </div>
             </div>
+
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+.financial-profile-page {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+.financial-profile-page .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.financial-profile-page .dashboard-header .welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.financial-profile-page .dashboard-header .welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.financial-profile-page .dashboard-header .dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.financial-profile-page .dashboard-header .dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.financial-profile-page .dashboard-header .dashboard-subtitle i {
+    color: #21874b;
+}
+
+.financial-profile-page .dashboard-header .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.financial-profile-page .dashboard-header .dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.financial-profile-page .dashboard-header .dashboard-action.secondary {
+    color: #315dcb;
+    border: 1px solid #d9e1f5;
+    background: #fff;
+}
+
+.financial-profile-page .dashboard-header .dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+.financial-profile-page .dashboard-grid.single-column {
+    display: block;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.financial-profile-page .dashboard-panel {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    overflow: hidden;
+}
+
+.financial-profile-page .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 19px 21px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.financial-profile-page .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #1c3326;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.financial-profile-page .panel-title-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: #21874b;
+    background: #e9f6ed;
+    font-size: .82rem;
+}
+
+.financial-profile-page .panel-subtitle {
+    margin: 4px 0 0 41px;
+    color: #9aa39e;
+    font-size: .68rem;
+}
+
+.financial-profile-page .panel-body {
+    padding: 24px 21px;
+}
+
+.financial-profile-page .user-info-card {
+    padding: 16px 18px;
+    background: #f5fcf7;
+    border: 1px solid #dcefe1;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.financial-profile-page .user-info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.financial-profile-page .user-info-header i {
+    font-size: 1.6rem;
+    color: #21874b;
+}
+
+.financial-profile-page .user-info-header strong {
+    font-size: 0.95rem;
+    color: #1c3326;
+}
+
+.financial-profile-page .user-info-header span {
+    font-size: 0.7rem;
+    color: #21874b;
+    background: #e7f5eb;
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-weight: 600;
+}
+
+.financial-profile-page .user-info-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 6px;
+}
+
+.financial-profile-page .user-info-details span {
+    font-size: 0.82rem;
+    color: #6c7a72;
+}
+
+.financial-profile-page .user-info-details span i {
+    margin-right: 4px;
+    color: #21874b;
+}
+
+.financial-profile-page .user-info-note {
+    font-size: 0.72rem;
+    color: #8a9a92;
+    margin-bottom: 0;
+}
+
+.financial-profile-page .user-info-note a {
+    color: #21874b;
+    font-weight: 600;
+}
+
+.financial-profile-page .form-group {
+    margin-bottom: 18px;
+}
+
+.financial-profile-page .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.financial-profile-page .form-group .form-label {
+    font-weight: 700;
+    font-size: .82rem;
+    color: #1c3326;
+    margin-bottom: 5px;
+}
+
+.financial-profile-page .form-group .form-control,
+.financial-profile-page .form-group .form-select {
+    border-radius: 10px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.6rem 0.85rem;
+    font-size: .88rem;
+    transition: all .2s ease;
+    background: #fff;
+    color: #1c3326;
+    width: 100%;
+}
+
+.financial-profile-page .form-group .form-control:focus,
+.financial-profile-page .form-group .form-select:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.12);
+    outline: none;
+}
+
+.financial-profile-page .form-group .form-text {
+    color: #8a9a92;
+    font-size: .7rem;
+    margin-top: 4px;
+}
+
+.financial-profile-page .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #edf0ee;
+}
+
+.financial-profile-page .form-actions .btn {
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: .85rem;
+    padding: 0.6rem 1.4rem;
+    transition: all .2s ease;
+    min-height: 42px;
+}
+
+.financial-profile-page .form-actions .btn-success {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.financial-profile-page .form-actions .btn-success:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26,110,62,.35);
+}
+
+.financial-profile-page .form-actions .btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.financial-profile-page .form-actions .btn-secondary:hover {
+    background: #dce1dd;
+    color: #1c3326;
+}
+
+@media (max-width: 768px) {
+    .financial-profile-page {
+        min-height: calc(100vh - 66px);
+    }
+
+    .financial-profile-page .dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+        margin-bottom: 22px;
+    }
+
+    .financial-profile-page .dashboard-header .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .financial-profile-page .dashboard-header .header-actions {
+        width: 100%;
+    }
+
+    .financial-profile-page .dashboard-header .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .financial-profile-page .panel-header {
+        padding: 15px;
+    }
+
+    .financial-profile-page .panel-subtitle {
+        margin-left: 0;
+    }
+
+    .financial-profile-page .panel-body {
+        padding: 16px;
+    }
+
+    .financial-profile-page .user-info-card {
+        padding: 14px;
+    }
+
+    .financial-profile-page .user-info-details {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .financial-profile-page .form-actions {
+        flex-direction: column;
+    }
+
+    .financial-profile-page .form-actions .btn {
+        width: 100%;
+    }
+
+    .financial-profile-page .form-group .form-control,
+    .financial-profile-page .form-group .form-select {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .financial-profile-page .dashboard-header .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .financial-profile-page .dashboard-header .dashboard-subtitle {
+        font-size: .78rem;
+    }
+
+    .financial-profile-page .panel-title {
+        font-size: .82rem;
+    }
+}
+</style>
 {% endblock %}

@@ -1,49 +1,388 @@
+<!-- templates/financial/loan_product_form.html -->
 {% extends 'base.html' %}
 
 {% block title %}{{ action }} Loan Product - Financial Institution{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
+
+<div class="financial-product-form">
+
+    <div class="container py-4">
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Header -->
+                <div class="mb-4">
+                    <div class="welcome-label">
+                        <span class="welcome-dot"></span>
+                        Loan Product
+                    </div>
+                    <h2 class="fw-bold mb-1">
                         <i class="bi bi-box text-success me-2"></i>
                         {{ action }} Loan Product
-                    </h5>
+                    </h2>
+                    <p class="text-muted">
+                        {% if action == 'Create' %}
+                            Create a new loan product to offer to farmers
+                        {% else %}
+                            Update your loan product details
+                        {% endif %}
+                    </p>
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
+
+                <!-- Form Card -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-info-circle text-success me-2"></i>
+                            Product Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" data-loading="true" 
+                              data-loading-title="{% if action == 'Create' %}Creating Product{% else %}Updating Product{% endif %}"
+                              data-loading-message="Please wait...">
+                            {% csrf_token %}
+
+                            <!-- Name -->
                             <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">
-                                    {{ field.label }}
-                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    {{ form.name.label }} <span class="text-danger">*</span>
                                 </label>
-                                {{ field }}
-                                {% if field.errors %}
-                                    <div class="text-danger small mt-1">{{ field.errors }}</div>
-                                {% endif %}
-                                {% if field.help_text %}
-                                    <div class="text-muted small">{{ field.help_text }}</div>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
-                        {% endfor %}
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle me-1"></i>
-                                {% if action == 'Create' %}Create{% else %}Update{% endif %} Product
-                            </button>
-                            <a href="{% url 'financial_loan_products' %}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-1"></i> Cancel
-                            </a>
-                        </div>
-                    </form>
+
+                            <!-- Loan Type -->
+                            <div class="mb-3">
+                                <label for="{{ form.loan_type.id_for_label }}" class="form-label">
+                                    {{ form.loan_type.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.loan_type }}
+                                {% if form.loan_type.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.loan_type.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Chagua aina ya mkopo: Pembejeo, Uzalishaji, Biashara, au Jumla
+                                </div>
+                            </div>
+
+                            <!-- Interest Rate -->
+                            <div class="mb-3">
+                                <label for="{{ form.interest_rate.id_for_label }}" class="form-label">
+                                    {{ form.interest_rate.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.interest_rate }}
+                                {% if form.interest_rate.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.interest_rate.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.interest_rate.help_text }}</div>
+                            </div>
+
+                            <!-- Min & Max Amount - Row -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.min_amount.id_for_label }}" class="form-label">
+                                        {{ form.min_amount.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.min_amount }}
+                                    {% if form.min_amount.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.min_amount.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.min_amount.help_text }}</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.max_amount.id_for_label }}" class="form-label">
+                                        {{ form.max_amount.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.max_amount }}
+                                    {% if form.max_amount.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.max_amount.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.max_amount.help_text }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Duration & Repayment Frequency - Row -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.duration_months.id_for_label }}" class="form-label">
+                                        {{ form.duration_months.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.duration_months }}
+                                    {% if form.duration_months.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.duration_months.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.duration_months.help_text }}</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.repayment_frequency.id_for_label }}" class="form-label">
+                                        {{ form.repayment_frequency.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.repayment_frequency }}
+                                    {% if form.repayment_frequency.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.repayment_frequency.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.repayment_frequency.help_text }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Grace Period & Min Credit Score - Row -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.grace_period_days.id_for_label }}" class="form-label">
+                                        {{ form.grace_period_days.label }}
+                                    </label>
+                                    {{ form.grace_period_days }}
+                                    {% if form.grace_period_days.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.grace_period_days.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.grace_period_days.help_text }}</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.minimum_credit_score.id_for_label }}" class="form-label">
+                                        {{ form.minimum_credit_score.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.minimum_credit_score }}
+                                    {% if form.minimum_credit_score.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.minimum_credit_score.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.minimum_credit_score.help_text }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">
+                                    {{ form.description.label }}
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.description.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Active Checkbox -->
+                            <div class="mb-3 form-check">
+                                {{ form.is_active }}
+                                <label for="{{ form.is_active.id_for_label }}" class="form-check-label">
+                                    {{ form.is_active.label }}
+                                </label>
+                                {% if form.is_active.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.is_active.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2 mt-4 pt-2 border-top">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    {% if action == 'Create' %}Create{% else %}Update{% endif %} Product
+                                </button>
+                                <a href="{% url 'financial_loan_products' %}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+
             </div>
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   FINANCIAL PRODUCT FORM - COMPLETE STYLES
+============================================================ */
+
+.financial-product-form {
+    min-height: calc(100vh - 76px);
+    padding: 20px 0 55px;
+    background: #f5f8f6;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.financial-product-form .card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.financial-product-form .card-header {
+    background: transparent;
+    border-bottom: 1px solid #edf0ee;
+    padding: 1.1rem 1.5rem;
+}
+
+.financial-product-form .card-body {
+    padding: 1.5rem;
+}
+
+.financial-product-form h2 {
+    color: #183b29;
+    font-size: 1.8rem;
+    letter-spacing: -0.5px;
+}
+
+.financial-product-form .form-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #1c3326;
+}
+
+.financial-product-form .form-control,
+.financial-product-form .form-select {
+    border-radius: 10px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    transition: all .2s ease;
+    background: #fff;
+    color: #1c3326;
+    width: 100%;
+}
+
+.financial-product-form .form-control:focus,
+.financial-product-form .form-select:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.15);
+}
+
+.financial-product-form .form-text {
+    color: #8a9a92;
+    font-size: 0.75rem;
+}
+
+.financial-product-form .btn {
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.4rem;
+}
+
+.financial-product-form .btn-success {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.financial-product-form .btn-success:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26,110,62,0.35);
+}
+
+.financial-product-form .btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.financial-product-form .btn-secondary:hover {
+    background: #dce1dd;
+    color: #1c3326;
+}
+
+.financial-product-form .form-check-input:checked {
+    background-color: #2d8f4e;
+    border-color: #2d8f4e;
+}
+
+.financial-product-form .text-danger {
+    font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .financial-product-form {
+        min-height: calc(100vh - 66px);
+        padding: 15px 0 35px;
+    }
+
+    .financial-product-form h2 {
+        font-size: 1.4rem;
+    }
+
+    .financial-product-form .card-body {
+        padding: 1.2rem;
+    }
+
+    .financial-product-form .btn {
+        font-size: 0.8rem;
+        flex: 1;
+    }
+}
+</style>
 {% endblock %}

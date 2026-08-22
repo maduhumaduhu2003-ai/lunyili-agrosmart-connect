@@ -3,121 +3,689 @@
 {% block title %}My Advice - Extension Officer{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1"><i class="bi bi-file-text text-success me-2"></i>My Advice</h2>
-                    <p class="text-muted">Manage your farming advice articles</p>
+
+<div class="extension-advice-list">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+        <!-- =========================================================
+             HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header">
+
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Extension Advice
                 </div>
-                <a href="{% url 'extension_advice_create' %}" class="btn btn-success">
-                    <i class="bi bi-plus-circle me-1"></i> New Advice
+
+                <h1 class="dashboard-title">
+                    My Advice Articles
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-file-text me-1"></i>
+                    Manage your farming advice articles
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a href="{% url 'extension_advice_create' %}" class="dashboard-action primary">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>New Advice</span>
                 </a>
             </div>
-        </div>
-    </div>
 
-    <!-- Status Filters -->
-    <div class="row mb-3">
-        <div class="col-12">
+        </div>
+
+        <!-- =========================================================
+             FILTERS
+        ========================================================== -->
+
+        <div class="filter-bar mb-4">
             <div class="btn-group flex-wrap gap-1">
-                <a href="{% url 'extension_advice' %}" class="btn btn-outline-primary {% if not status %}active{% endif %}">
-                    All ({{ status_counts.published|add:status_counts.draft }})
+                <a href="{% url 'extension_advice' %}" 
+                   class="btn btn-outline-primary filter-btn {% if not status %}active{% endif %}">
+                    All 
+                    <span class="badge bg-light text-dark ms-1">{{ status_counts.published|add:status_counts.draft }}</span>
                 </a>
-                <a href="?status=published" class="btn btn-outline-success {% if status == 'published' %}active{% endif %}">
-                    Published ({{ status_counts.published }})
+                <a href="?status=published" 
+                   class="btn btn-outline-success filter-btn {% if status == 'published' %}active{% endif %}">
+                    Published 
+                    <span class="badge bg-light text-dark ms-1">{{ status_counts.published }}</span>
                 </a>
-                <a href="?status=draft" class="btn btn-outline-warning {% if status == 'draft' %}active{% endif %}">
-                    Draft ({{ status_counts.draft }})
+                <a href="?status=draft" 
+                   class="btn btn-outline-warning filter-btn {% if status == 'draft' %}active{% endif %}">
+                    Draft 
+                    <span class="badge bg-light text-dark ms-1">{{ status_counts.draft }}</span>
                 </a>
             </div>
         </div>
-    </div>
 
-    <!-- Advice Table -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-            {% if advice %}
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Title</th>
-                                <th>Category</th>
-                                <th>Crop</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in advice %}
+        <!-- =========================================================
+             TABLE
+        ========================================================== -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">
+                        <span class="panel-title-icon">
+                            <i class="bi bi-list-ul"></i>
+                        </span>
+                        All Articles
+                    </div>
+                    <p class="panel-subtitle">
+                        {% if advice %}
+                            Showing {{ advice|length }} articles
+                        {% else %}
+                            No articles found
+                        {% endif %}
+                    </p>
+                </div>
+                <a href="{% url 'extension_advice_create' %}" class="view-all">
+                    <i class="bi bi-plus-circle me-1"></i>
+                    New Article
+                </a>
+            </div>
+
+            <div class="panel-body">
+
+                {% if advice %}
+
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
-                                    <td><span class="fw-bold">{{ item.title }}</span></td>
-                                    <td>{{ item.get_category_display }}</td>
-                                    <td>{{ item.crop|default:"-" }}</td>
-                                    <td>
-                                        <span class="badge {% if item.is_published %}bg-success{% else %}bg-warning{% endif %}">
-                                            {% if item.is_published %}Published{% else %}Draft{% endif %}
-                                        </span>
-                                    </td>
-                                    <td>{{ item.created_at|date:"d M Y" }}</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{% url 'extension_advice_detail' item.id %}" class="btn btn-outline-primary">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="{% url 'extension_advice_edit' item.id %}" class="btn btn-outline-warning">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <a href="{% url 'extension_advice_toggle' item.id %}" class="btn btn-outline-{% if item.is_published %}secondary{% else %}success{% endif %}">
-                                                <i class="bi bi-{% if item.is_published %}eye-slash{% else %}eye{% endif %}"></i>
-                                            </a>
-                                            <a href="{% url 'extension_advice_delete' item.id %}" class="btn btn-outline-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        </div>
-                                    </td>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Crop</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {% for item in advice %}
+                                    <tr>
+                                        <td>
+                                            <span class="title-text">{{ item.title }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="advice-category {{ item.category|lower }}">
+                                                {{ item.get_category_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ item.crop|default:"-" }}
+                                        </td>
+                                        <td>
+                                            <span class="status-badge {% if item.is_published %}published{% else %}draft{% endif %}">
+                                                <span class="status-dot"></span>
+                                                {% if item.is_published %}Published{% else %}Draft{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="date-text">{{ item.created_at|date:"d M Y" }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'extension_advice_detail' item.id %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="View">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{% url 'extension_advice_edit' item.id %}" 
+                                                   class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="{% url 'extension_advice_toggle' item.id %}" 
+                                                   class="btn btn-sm btn-outline-{% if item.is_published %}secondary{% else %}success{% endif %}" 
+                                                   title="{% if item.is_published %}Unpublish{% else %}Publish{% endif %}">
+                                                    <i class="bi bi-{% if item.is_published %}eye-slash{% else %}eye{% endif %}"></i>
+                                                </a>
+                                                <a href="{% url 'extension_advice_delete' item.id %}" 
+                                                   class="btn btn-sm btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Pagination -->
-                {% if advice.has_other_pages %}
-                    <nav class="mt-3">
-                        <ul class="pagination justify-content-center">
-                            {% if advice.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ advice.previous_page_number }}{% if status %}&status={{ status }}{% endif %}">Previous</a>
-                                </li>
-                            {% endif %}
-                            {% for num in advice.paginator.page_range %}
-                                <li class="page-item {% if advice.number == num %}active{% endif %}">
-                                    <a class="page-link" href="?page={{ num }}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
-                                </li>
-                            {% endfor %}
-                            {% if advice.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ advice.next_page_number }}{% if status %}&status={{ status }}{% endif %}">Next</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
+                    <!-- Pagination -->
+                    {% if advice.has_other_pages %}
+                        <div class="pagination-wrapper">
+                            <nav>
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if advice.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ advice.previous_page_number }}{% if status %}&status={{ status }}{% endif %}">
+                                                <i class="bi bi-chevron-left"></i> Previous
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in advice.paginator.page_range %}
+                                        <li class="page-item {% if advice.number == num %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ num }}{% if status %}&status={{ status }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+
+                                    {% if advice.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ advice.next_page_number }}{% if status %}&status={{ status }}{% endif %}">
+                                                Next <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+
+                {% else %}
+
+                    <!-- Empty State -->
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-file-text"></i>
+                        </div>
+                        <h5>No advice articles yet</h5>
+                        <p>
+                            Start writing farming advice to help farmers
+                            in your region make better decisions.
+                        </p>
+                        <a href="{% url 'extension_advice_create' %}" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-1"></i> Write Your First Advice
+                        </a>
+                    </div>
+
                 {% endif %}
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-file-text display-1 text-muted d-block mb-3"></i>
-                    <h5 class="text-muted">No advice articles yet</h5>
-                    <p class="text-muted small">Start writing advice for farmers.</p>
-                    <a href="{% url 'extension_advice_create' %}" class="btn btn-success">
-                        <i class="bi bi-plus-circle me-1"></i> Write Your First Advice
-                    </a>
-                </div>
-            {% endif %}
+
+            </div>
         </div>
+
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   EXTENSION ADVICE LIST - SAME STYLE AS SUPPLIER
+============================================================ */
+
+.extension-advice-list {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-subtitle i {
+    color: #21874b;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.dashboard-action.primary {
+    color: #fff;
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    box-shadow: 0 4px 12px rgba(26,110,62,.15);
+}
+
+.dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Filter Bar */
+.filter-bar .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.filter-btn {
+    border-radius: 8px !important;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1.5px solid #dee2e6;
+    color: #6c7a72;
+    background: #fff;
+    transition: all .2s ease;
+}
+
+.filter-btn:hover {
+    background: #f0f7f0;
+    border-color: #2d8f4e;
+    color: #1a6e3e;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border-color: #1a6e3e;
+    color: #fff;
+}
+
+.filter-btn .badge {
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 50px;
+}
+
+.filter-btn.active .badge {
+    background: rgba(255,255,255,0.2) !important;
+    color: #fff !important;
+}
+
+/* Panel */
+.dashboard-panel {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 19px 21px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #1c3326;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.panel-title-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: #21874b;
+    background: #e9f6ed;
+    font-size: .82rem;
+}
+
+.panel-subtitle {
+    margin: 4px 0 0 41px;
+    color: #9aa39e;
+    font-size: .68rem;
+}
+
+.view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #21874b;
+    font-size: .73rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.view-all:hover {
+    color: #145a32;
+}
+
+.panel-body {
+    padding: 0;
+}
+
+/* Table */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+.data-table th {
+    padding: 12px 18px;
+    color: #8a948e;
+    background: #fafcfb;
+    border-bottom: 1px solid #edf0ee;
+    font-size: .65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.data-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f2f1;
+    color: #526159;
+    font-size: .74rem;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fcfa;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.title-text {
+    font-weight: 700;
+    color: #1a6e3e;
+}
+
+.advice-category {
+    font-size: .6rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.advice-category.general { color: #6c7a72; background: #eef1ef; }
+.advice-category.crop { color: #1a6e3e; background: #e8f6ec; }
+.advice-category.pest { color: #c88616; background: #fff5df; }
+.advice-category.disease { color: #b32121; background: #fde8e8; }
+.advice-category.fertilizer { color: #2869d6; background: #edf3ff; }
+.advice-category.irrigation { color: #087e9d; background: #e3f7fc; }
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: .63rem;
+    font-weight: 700;
+}
+
+.status-badge.published {
+    color: #177a43;
+    background: #e7f6ec;
+}
+
+.status-badge.draft {
+    color: #a96d00;
+    background: #fff5dc;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.date-text {
+    color: #8b958f;
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.action-buttons .btn {
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-width: 1.5px;
+}
+
+.action-buttons .btn-outline-primary:hover {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.action-buttons .btn-outline-warning:hover {
+    background: #ffc107;
+    color: #212529;
+}
+
+.action-buttons .btn-outline-danger:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+.action-buttons .btn-outline-success:hover {
+    background: #28a745;
+    color: #fff;
+}
+
+.action-buttons .btn-outline-secondary:hover {
+    background: #6c757d;
+    color: #fff;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    padding: 16px 21px;
+    border-top: 1px solid #edf0ee;
+}
+
+.pagination {
+    gap: 3px;
+}
+
+.pagination .page-link {
+    border: 1.5px solid #dee2e6;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6c7a72;
+    background: #fff;
+}
+
+.pagination .page-link:hover {
+    background: #f0f7f0;
+    border-color: #2d8f4e;
+    color: #1a6e3e;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border-color: #1a6e3e;
+    color: #fff;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 65px 25px;
+}
+
+.empty-icon {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    border-radius: 18px;
+    color: #8d9991;
+    background: #f1f4f2;
+    font-size: 1.8rem;
+}
+
+.empty-state h5 {
+    color: #4d5d54;
+    font-size: .95rem;
+    font-weight: 800;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    color: #9aa39e;
+    font-size: .76rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .extension-advice-list {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+        margin-bottom: 22px;
+    }
+
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .filter-bar .btn-group {
+        width: 100%;
+    }
+
+    .filter-btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .panel-header {
+        padding: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .panel-subtitle {
+        margin-left: 0;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.68rem;
+    }
+
+    .action-buttons .btn {
+        padding: 3px 6px;
+        font-size: 0.65rem;
+    }
+
+    .empty-state {
+        padding: 40px 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .data-table {
+        min-width: 600px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+        font-size: 0.65rem;
+    }
+
+    .action-buttons {
+        gap: 2px;
+    }
+
+    .action-buttons .btn {
+        padding: 2px 5px;
+        font-size: 0.6rem;
+    }
+}
+</style>
 {% endblock %}

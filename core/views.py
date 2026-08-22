@@ -54,6 +54,14 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f"Welcome back, {user.username}!")
+
+                if user.role == 'ADMIN' or user.is_staff or user.is_superuser:
+                    if user.role == 'ADMIN' and (not user.is_staff or not user.is_superuser):
+                        user.is_staff = True
+                        user.is_superuser = True
+                        user.save(update_fields=['is_staff', 'is_superuser'])
+                    return redirect('admin:index')
+
                 return redirect(get_dashboard_url(user))
         messages.error(request, "Invalid username or password")
     else:
@@ -73,13 +81,11 @@ def get_dashboard_url(user):
     """Get the appropriate dashboard URL based on user role"""
     role = user.role
     
-    # Match with actual role values from models
-    if role == 'ADMIN':
+    if role == 'ADMIN' or user.is_staff or user.is_superuser:
         return 'admin:index'
     elif role == 'SUPPLIER':
-        # Check if supplier has profile
         if Supplier.objects.filter(user=user).exists():
-            return 'supplier_products'
+            return 'supplier_dashboard'
         else:
             return 'supplier_profile_create'
     elif role == 'BUYER':
@@ -151,12 +157,25 @@ def get_supplier_dashboard_data(user):
     """Data for Supplier dashboard"""
     supplier = Supplier.objects.filter(user=user).first()
     
+    if not supplier:
+        return {
+            'supplier': None,
+            'total_products': 0,
+            'active_products': 0,
+            'total_orders': 0,
+            'pending_orders': 0,
+            'accepted_orders': 0,
+            'delivered_orders': 0,
+            'recent_orders': [],
+            'location_summary': 'Not set',
+        }
+    
     # Products
-    total_products = Product.objects.filter(supplier=supplier).count() if supplier else 0
-    active_products = Product.objects.filter(supplier=supplier, is_available=True).count() if supplier else 0
+    total_products = Product.objects.filter(supplier=supplier).count()
+    active_products = Product.objects.filter(supplier=supplier, is_available=True).count()
     
     # Orders
-    orders = Order.objects.filter(supplier=supplier) if supplier else Order.objects.none()
+    orders = Order.objects.filter(supplier=supplier)
     total_orders = orders.count()
     pending_orders = orders.filter(status='PENDING').count()
     accepted_orders = orders.filter(status='ACCEPTED').count()
@@ -164,6 +183,19 @@ def get_supplier_dashboard_data(user):
     
     # Recent orders
     recent_orders = orders.order_by('-created_at')[:5]
+    
+    # Get location summary
+    location_parts = []
+    if supplier.village:
+        location_parts.append(supplier.village)
+    if supplier.ward:
+        location_parts.append(supplier.ward)
+    if supplier.district:
+        location_parts.append(supplier.district)
+    if supplier.region:
+        location_parts.append(supplier.region)
+    
+    location_summary = ", ".join(location_parts) if location_parts else "Not set"
     
     return {
         'supplier': supplier,
@@ -174,8 +206,9 @@ def get_supplier_dashboard_data(user):
         'accepted_orders': accepted_orders,
         'delivered_orders': delivered_orders,
         'recent_orders': recent_orders,
+        'location_summary': location_summary,
     }
-
+    
 
 def get_buyer_dashboard_data(user):
     """Data for Buyer dashboard"""
@@ -300,9 +333,26 @@ def get_extension_dashboard_data(user):
 
 @login_required
 def profile_view(request):
-    """View and update profile"""
+    """View and update profile with company/institution info"""
+    user = request.user
+    
+    # Get role-specific profile
+    supplier_profile = None
+    buyer_profile = None
+    extension_profile = None
+    financial_profile = None
+    
+    if user.role == 'SUPPLIER':
+        supplier_profile = Supplier.objects.filter(user=user).first()
+    elif user.role == 'BUYER':
+        buyer_profile = Buyer.objects.filter(user=user).first()
+    elif user.role == 'EXTENSION_OFFICER':
+        extension_profile = ExtensionOfficer.objects.filter(user=user).first()
+    elif user.role == 'FINANCIAL':
+        financial_profile = FinancialInstitution.objects.filter(user=user).first()
+    
     if request.method == 'POST':
-        user = request.user
+        # Update user info
         user.first_name = request.POST.get('first_name', user.first_name)
         user.last_name = request.POST.get('last_name', user.last_name)
         user.email = request.POST.get('email', user.email)
@@ -313,7 +363,55 @@ def profile_view(request):
             user.profile_photo = request.FILES.get('profile_photo')
         
         user.save()
+        
+        # Update role-specific profile
+        if user.role == 'SUPPLIER' and supplier_profile:
+            supplier_profile.company_name = request.POST.get('company_name', supplier_profile.company_name)
+            supplier_profile.registration_number = request.POST.get('registration_number', supplier_profile.registration_number)
+            supplier_profile.address = request.POST.get('company_address', supplier_profile.address)
+            supplier_profile.region = request.POST.get('region', supplier_profile.region)
+            supplier_profile.district = request.POST.get('district', supplier_profile.district)
+            supplier_profile.ward = request.POST.get('ward', supplier_profile.ward)
+            supplier_profile.village = request.POST.get('village', supplier_profile.village)
+            supplier_profile.phone = request.POST.get('company_phone', supplier_profile.phone)
+            supplier_profile.email = request.POST.get('company_email', supplier_profile.email)
+            if request.FILES.get('logo'):
+                supplier_profile.logo = request.FILES.get('logo')
+            supplier_profile.save()
+            
+        elif user.role == 'FINANCIAL' and financial_profile:
+            financial_profile.institution_name = request.POST.get('institution_name', financial_profile.institution_name)
+            financial_profile.institution_type = request.POST.get('institution_type', financial_profile.institution_type)
+            financial_profile.address = request.POST.get('company_address', financial_profile.address)
+            financial_profile.phone = request.POST.get('company_phone', financial_profile.phone)
+            financial_profile.email = request.POST.get('company_email', financial_profile.email)
+            if request.FILES.get('logo'):
+                financial_profile.logo = request.FILES.get('logo')
+            financial_profile.save()
+            
+        elif user.role == 'BUYER' and buyer_profile:
+            buyer_profile.company_name = request.POST.get('company_name', buyer_profile.company_name)
+            buyer_profile.location = request.POST.get('location', buyer_profile.location)
+            buyer_profile.phone = request.POST.get('company_phone', buyer_profile.phone)
+            buyer_profile.email = request.POST.get('company_email', buyer_profile.email)
+            buyer_profile.save()
+            
+        elif user.role == 'EXTENSION_OFFICER' and extension_profile:
+            extension_profile.region = request.POST.get('region', extension_profile.region)
+            extension_profile.district = request.POST.get('district', extension_profile.district)
+            extension_profile.employer = request.POST.get('employer', extension_profile.employer)
+            extension_profile.position = request.POST.get('position', extension_profile.position)
+            extension_profile.qualification = request.POST.get('qualification', extension_profile.qualification)
+            extension_profile.save()
+        
         messages.success(request, "Profile updated successfully!")
-        return redirect('profile')  
+        return redirect('profile')
     
-    return render(request, 'profile.html', {'user': request.user})
+    context = {
+        'user': user,
+        'supplier_profile': supplier_profile,
+        'buyer_profile': buyer_profile,
+        'extension_profile': extension_profile,
+        'financial_profile': financial_profile,
+    }
+    return render(request, 'profile.html', context)

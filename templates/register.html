@@ -1,53 +1,344 @@
 {% extends 'base.html' %}
 
-{% block title %}Register - AgroSimple{% endblock %}
+{% block title %}Create Account - Lunyili AgroSmart{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ================================
+       REGISTER PAGE
+    ================================= */
+
+    .register-page {
+        min-height: calc(100vh - 76px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 15px;
+    }
+
+    .register-card {
+        width: 100%;
+        max-width: 560px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.07);
+        overflow: hidden;
+    }
+
+    /* Header */
+    .register-header {
+        text-align: center;
+        padding: 28px 30px 22px;
+        border-bottom: 1px solid #eef0f2;
+        background: #ffffff;
+    }
+
+    .register-icon {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 12px;
+        border-radius: 12px;
+        background: #e8f5e9;
+        color: #1a6e3e;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 23px;
+    }
+
+    .register-header h4 {
+        margin: 0;
+        color: #212529;
+        font-size: 1.35rem;
+        font-weight: 700;
+    }
+
+    .register-header p {
+        margin: 6px 0 0;
+        color: #6c757d;
+        font-size: 0.88rem;
+    }
+
+    /* Body */
+    .register-body {
+        padding: 30px;
+    }
+
+    /* Form fields */
+    .register-field {
+        margin-bottom: 18px;
+    }
+
+    .register-field label {
+        display: block;
+        margin-bottom: 7px;
+
+        color: #344054;
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+
+    .required-star {
+        color: #dc3545;
+        margin-left: 2px;
+    }
+
+    /* Django generated inputs */
+    .register-body input,
+    .register-body select,
+    .register-body textarea {
+        width: 100%;
+        box-sizing: border-box;
+
+        padding: 10px 12px;
+        min-height: 44px;
+
+        border: 1px solid #d9dee5;
+        border-radius: 9px;
+
+        background: #ffffff;
+        color: #212529;
+
+        font-size: 0.9rem;
+
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .register-body textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .register-body input:focus,
+    .register-body select:focus,
+    .register-body textarea:focus {
+        outline: none;
+
+        border-color: #2d8f4e;
+
+        box-shadow: 0 0 0 3px rgba(45, 143, 78, 0.10);
+    }
+
+    .register-body input::placeholder,
+    .register-body textarea::placeholder {
+        color: #adb5bd;
+    }
+
+    /* Help text */
+    .register-help {
+        margin-top: 5px;
+
+        color: #667085;
+        font-size: 0.78rem;
+        line-height: 1.4;
+    }
+
+    /* Errors */
+    .register-error {
+        margin-top: 5px;
+
+        color: #dc3545;
+        font-size: 0.8rem;
+    }
+
+    .register-error ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    /* Submit button */
+    .register-submit {
+        width: 100%;
+        min-height: 46px;
+
+        margin-top: 4px;
+
+        border: none;
+        border-radius: 9px;
+
+        background: #1a6e3e;
+        color: #ffffff;
+
+        font-size: 0.92rem;
+        font-weight: 600;
+
+        transition: all 0.2s ease;
+    }
+
+    .register-submit:hover {
+        background: #145a32;
+        color: #ffffff;
+
+        transform: translateY(-1px);
+
+        box-shadow: 0 4px 12px rgba(26, 110, 62, 0.20);
+    }
+
+    .register-submit:active {
+        transform: translateY(0);
+    }
+
+    /* Login section */
+    .login-section {
+        margin-top: 23px;
+        padding-top: 20px;
+
+        border-top: 1px solid #eef0f2;
+
+        text-align: center;
+    }
+
+    .login-section p {
+        margin: 0;
+
+        color: #6c757d;
+        font-size: 0.87rem;
+    }
+
+    .login-section a {
+        color: #1a6e3e;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .login-section a:hover {
+        text-decoration: underline;
+    }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+
+        .register-page {
+            min-height: auto;
+            padding: 25px 12px;
+            align-items: flex-start;
+        }
+
+        .register-card {
+            margin-top: 10px;
+        }
+
+        .register-header {
+            padding: 24px 20px 20px;
+        }
+
+        .register-body {
+            padding: 24px 20px;
+        }
+    }
+</style>
+{% endblock %}
+
 
 {% block content %}
-<div class="row justify-content-center" style="min-height: 80vh;">
-    <div class="col-md-6">
-        <div class="card shadow-lg border-0 mt-4">
-            <div class="card-header bg-success text-white text-center py-3">
-                <h4 class="mb-0"><i class="bi bi-person-plus"></i> Create Account</h4>
-                <small>Join AgroSimple community</small>
+
+<div class="register-page">
+
+    <div class="register-card">
+
+        <!-- Header -->
+        <div class="register-header">
+
+            <div class="register-icon">
+                <i class="bi bi-person-plus"></i>
             </div>
-            <div class="card-body p-4">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">
-                                {{ field.label }}
-                                {% if field.field.required %}
-                                    <span class="text-danger">*</span>
-                                {% endif %}
-                            </label>
-                            
-                            {# Use the field directly - Django will render it properly #}
-                            {{ field }}
-                            
-                            {% if field.errors %}
-                                <div class="text-danger small mt-1">{{ field.errors }}</div>
-                            {% endif %}
-                            
-                            {% if field.help_text %}
-                                <div class="text-muted small">{{ field.help_text }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                    
-                    <button type="submit" class="btn btn-success w-100 py-2">
-                        <i class="bi bi-person-plus"></i> Create Account
-                    </button>
-                </form>
-                
-                <hr>
-                
-                <div class="text-center">
-                    <p class="mb-0">Already have an account? <a href="{% url 'login' %}" class="text-success fw-bold">Login</a></p>
-                </div>
-            </div>
+
+            <h4>Create Account</h4>
+
+            <p>
+                Create your Lunyili AgroSmart account
+            </p>
+
         </div>
+
+
+        <!-- Form -->
+        <div class="register-body">
+
+            <form
+                method="post"
+                novalidate
+                data-loading="true"
+                data-loading-title="Creating Account"
+                data-loading-message="Setting up your AgroSimple account..."
+            >
+
+                {% csrf_token %}
+
+                {% for field in form %}
+
+                    <div class="register-field">
+
+                        <label for="{{ field.id_for_label }}">
+
+                            {{ field.label }}
+
+                            {% if field.field.required %}
+                                <span class="required-star">*</span>
+                            {% endif %}
+
+                        </label>
+
+
+                        {{ field }}
+
+
+                        {% if field.errors %}
+
+                            <div class="register-error">
+                                {{ field.errors }}
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if field.help_text %}
+
+                            <div class="register-help">
+                                {{ field.help_text|safe }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+
+                <!-- Submit -->
+                <button
+                    type="submit"
+                    class="register-submit"
+                >
+                    <i class="bi bi-person-plus me-2"></i>
+                    Create Account
+                </button>
+
+            </form>
+
+
+            <!-- Login -->
+            <div class="login-section">
+
+                <p>
+                    Already have an account?
+
+                    <a href="{% url 'login' %}">
+                        Login
+                    </a>
+                </p>
+
+            </div>
+
+        </div>
+
     </div>
+
 </div>
+
 {% endblock %}

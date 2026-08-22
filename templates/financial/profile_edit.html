@@ -1,0 +1,413 @@
+<!-- templates/financial/profile_edit.html -->
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Financial Institution{% endblock %}
+
+{% block content %}
+
+<div class="profile-edit-page">
+
+    <div class="container py-4">
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Header -->
+                <div class="mb-4">
+                    <div class="welcome-label">
+                        <span class="welcome-dot"></span>
+                        Financial Institution
+                    </div>
+                    <h1 class="dashboard-title">
+                        Edit Institution Profile
+                    </h1>
+                    <p class="dashboard-subtitle">
+                        <i class="bi bi-bank me-1"></i>
+                        Update your institution information
+                    </p>
+                </div>
+
+                <!-- Form Card -->
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-building text-success me-2"></i>
+                            Institution Details
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- Current Logo -->
+                        {% if institution.logo %}
+                            <div class="current-logo mb-3">
+                                <label class="form-label">Current Logo</label>
+                                <div>
+                                    <img src="{{ institution.logo.url }}" class="institution-logo" alt="{{ institution.institution_name }}">
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <form method="post" enctype="multipart/form-data" data-loading="true"
+                              data-loading-title="Updating Profile"
+                              data-loading-message="Saving your institution information...">
+
+                            {% csrf_token %}
+
+                            <!-- Institution Name -->
+                            <div class="mb-3">
+                                <label for="{{ form.institution_name.id_for_label }}" class="form-label">
+                                    {{ form.institution_name.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.institution_name }}
+                                {% if form.institution_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.institution_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Institution Type -->
+                            <div class="mb-3">
+                                <label for="{{ form.institution_type.id_for_label }}" class="form-label">
+                                    {{ form.institution_type.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.institution_type }}
+                                {% if form.institution_type.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.institution_type.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Phone & Email -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="company_phone" class="form-label">Institution Phone</label>
+                                    <input type="text" name="company_phone" class="form-control"
+                                           value="{{ institution.phone|default:user.phone|default:'' }}">
+                                    <div class="form-text">Phone number for the institution</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="company_email" class="form-label">Institution Email</label>
+                                    <input type="email" name="company_email" class="form-control"
+                                           value="{{ institution.email|default:user.email|default:'' }}">
+                                    <div class="form-text">Email address for the institution</div>
+                                </div>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="mb-3">
+                                <label for="{{ form.address.id_for_label }}" class="form-label">
+                                    {{ form.address.label }}
+                                </label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.address.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Logo -->
+                            <div class="mb-3">
+                                <label for="{{ form.logo.id_for_label }}" class="form-label">
+                                    {{ form.logo.label }}
+                                </label>
+                                {{ form.logo }}
+                                {% if form.logo.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.logo.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Upload your institution logo (JPG, PNG - Max 5MB)</div>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Update Profile
+                                </button>
+                                <a href="{% url 'financial_dashboard' %}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Cancel
+                                </a>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+                <!-- Institution Info Card -->
+                <div class="card shadow-sm border-0 mt-3">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-info-circle text-success me-2"></i>
+                            Institution Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Institution Name</span>
+                                <span class="info-value">{{ institution.institution_name|default:"-" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Type</span>
+                                <span class="info-value">{{ institution.get_institution_type_display|default:"-" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phone</span>
+                                <span class="info-value">{{ institution.phone|default:user.phone|default:"-" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Email</span>
+                                <span class="info-value">{{ institution.email|default:user.email|default:"-" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Address</span>
+                                <span class="info-value">{{ institution.address|default:"-" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Verification</span>
+                                <span class="info-value">
+                                    <span class="badge {% if institution.is_verified %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if institution.is_verified %}Verified{% else %}Pending{% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   PROFILE EDIT - COMPLETE STYLES
+============================================================ */
+
+.profile-edit-page {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-subtitle i {
+    color: #21874b;
+}
+
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid #edf0ee;
+    padding: 1.1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.form-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #1c3326;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    transition: all .2s ease;
+    background: #fff;
+    color: #1c3326;
+    width: 100%;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.15);
+}
+
+.form-text {
+    color: #8a9a92;
+    font-size: 0.75rem;
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.4rem;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26,110,62,0.35);
+}
+
+.btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.btn-secondary:hover {
+    background: #dce1dd;
+    color: #1c3326;
+}
+
+.current-logo {
+    padding: 12px;
+    background: #f8fbf9;
+    border-radius: 10px;
+}
+
+.institution-logo {
+    max-width: 120px;
+    max-height: 80px;
+    border-radius: 8px;
+    border: 1px solid #e7ece8;
+    padding: 4px;
+    background: #fff;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 20px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f2f1;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #8a948e;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.info-value {
+    color: #1c3326;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-edit-page {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .card-body {
+        padding: 1.2rem;
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        flex: 1;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .card-body {
+        padding: 0.9rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,9 +1,14 @@
+
+
 from django.urls import path
+from . import views_webhook
 from . import views
 from .views_supplier import (
     supplier_profile_create,
     supplier_products, supplier_product_create, supplier_product_edit,
-    supplier_product_delete, supplier_orders, supplier_order_detail
+    supplier_product_delete, supplier_orders, supplier_order_detail,
+    supplier_profile_edit,
+    supplier_dashboard  
 )
 from .views_buyer import (
     buyer_profile_create, buyer_dashboard,
@@ -20,11 +25,14 @@ from .views_financial import (
     financial_profile_create, financial_dashboard,
     financial_loan_products, financial_loan_product_create,
     financial_loan_product_edit, financial_loan_product_delete,
-    financial_applications, financial_application_detail
+    financial_applications, financial_application_detail,
+    financial_loan_product_detail, financial_loan_product_toggle,
+    financial_active_loans, financial_loan_detail,
+    financial_repayments, financial_reports,
+    financial_farmers, financial_farmer_detail,
+    financial_disbursements, financial_profile_edit
 )
-from .views_ussd import sms_callback, ussd_callback
-
-
+from .views_ussd import sms_callback, ussd_callback, payment_callback, disbursement_callback
 
 
 urlpatterns = [
@@ -37,7 +45,9 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     
     # Supplier URLs
+    path('supplier/dashboard/', supplier_dashboard, name='supplier_dashboard'),  
     path('supplier/profile/create/', supplier_profile_create, name='supplier_profile_create'),
+    path('supplier/profile/edit/', supplier_profile_edit, name='supplier_profile_edit'),
     path('supplier/products/', supplier_products, name='supplier_products'),
     path('supplier/products/create/', supplier_product_create, name='supplier_product_create'),
     path('supplier/products/<uuid:product_id>/edit/', supplier_product_edit, name='supplier_product_edit'),
@@ -69,16 +79,32 @@ urlpatterns = [
     
     # Financial Institution URLs
     path('financial/profile/create/', financial_profile_create, name='financial_profile_create'),
+    path('financial/profile/edit/', financial_profile_edit, name='financial_profile_edit'),
     path('financial/dashboard/', financial_dashboard, name='financial_dashboard'),
     path('financial/loan-products/', financial_loan_products, name='financial_loan_products'),
     path('financial/loan-products/create/', financial_loan_product_create, name='financial_loan_product_create'),
+    path('financial/loan-products/<uuid:product_id>/', financial_loan_product_detail, name='financial_loan_product_detail'),
     path('financial/loan-products/<uuid:product_id>/edit/', financial_loan_product_edit, name='financial_loan_product_edit'),
     path('financial/loan-products/<uuid:product_id>/delete/', financial_loan_product_delete, name='financial_loan_product_delete'),
+    path('financial/loan-products/<uuid:product_id>/toggle/', financial_loan_product_toggle, name='financial_loan_product_toggle'),
     path('financial/applications/', financial_applications, name='financial_applications'),
     path('financial/applications/<uuid:application_id>/', financial_application_detail, name='financial_application_detail'),
+    path('financial/loans/', financial_active_loans, name='financial_active_loans'),
+    path('financial/loans/<uuid:loan_id>/', financial_loan_detail, name='financial_loan_detail'),
+    path('financial/repayments/', financial_repayments, name='financial_repayments'),
+    path('financial/reports/', financial_reports, name='financial_reports'),
+    path('financial/farmers/', financial_farmers, name='financial_farmers'),
+    path('financial/farmers/<uuid:farmer_id>/', financial_farmer_detail, name='financial_farmer_detail'),
+    path('financial/disbursements/', financial_disbursements, name='financial_disbursements'),
+    
+    # Webhook endpoints
+    path('webhooks/clickpesa/', views_webhook.clickpesa_webhook, name='clickpesa_webhook'),
+    path('webhooks/clickpesa/health/', views_webhook.clickpesa_health, name='clickpesa_health'),
     
     # USSD endpoints
     path('ussd/', ussd_callback, name='ussd_callback'),
     path('ussd/callback/', ussd_callback, name='ussd_callback_alt'),
     path('sms-callback/', sms_callback, name='sms_callback'),
+    path('payments/callback/', payment_callback, name='payment_callback'),
+    path('disbursements/callback/', disbursement_callback, name='disbursement_callback'),
 ]

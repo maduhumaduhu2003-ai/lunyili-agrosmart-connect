@@ -4,50 +4,57 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="row">
+
+    <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center">
                 <div>
-                    <h2 class="mb-1"><i class="bi bi-file-earmark-text text-success me-2"></i>Request Detail</h2>
-                    <p class="text-muted">View buying request details</p>
+                    <h2 class="mb-1 fw-bold">
+                        <i class="bi bi-file-earmark-text text-success me-2"></i>Request Detail
+                    </h2>
+                    <p class="text-muted mb-0">View buying request details</p>
                 </div>
                 <a href="{% url 'buyer_requests' %}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Back to Requests
                 </a>
             </div>
+            <hr>
         </div>
     </div>
 
     <div class="row g-4">
+
         <!-- Request Information -->
         <div class="col-lg-6">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Request Information</h5>
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-info-circle me-2 text-success"></i>Request Information
+                    </h5>
                 </div>
                 <div class="card-body">
                     <div class="row mb-2">
-                        <div class="col-4 fw-bold">Crop</div>
-                        <div class="col-8">{{ buying_request.crop }}</div>
+                        <div class="col-4 fw-bold text-muted">Crop</div>
+                        <div class="col-8"><strong>{{ buying_request.crop }}</strong></div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-4 fw-bold">Quantity</div>
+                        <div class="col-4 fw-bold text-muted">Quantity</div>
                         <div class="col-8">{{ buying_request.quantity_kg }} kg</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-4 fw-bold">Price Offered</div>
+                        <div class="col-4 fw-bold text-muted">Price Offered</div>
                         <div class="col-8">TSh {{ buying_request.price_offered|floatformat:0 }}/kg</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-4 fw-bold">Location</div>
+                        <div class="col-4 fw-bold text-muted">Location</div>
                         <div class="col-8">{{ buying_request.location }}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-4 fw-bold">Expiry Date</div>
+                        <div class="col-4 fw-bold text-muted">Expiry Date</div>
                         <div class="col-8">{{ buying_request.expiry_date|date:"d M Y" }}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-4 fw-bold">Status</div>
+                        <div class="col-4 fw-bold text-muted">Status</div>
                         <div class="col-8">
                             <span class="badge {% if buying_request.is_open %}bg-success{% else %}bg-secondary{% endif %}">
                                 {% if buying_request.is_open %}Open{% else %}Closed{% endif %}
@@ -55,7 +62,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-4 fw-bold">Created</div>
+                        <div class="col-4 fw-bold text-muted">Created</div>
                         <div class="col-8">{{ buying_request.created_at|date:"d M Y H:i" }}</div>
                     </div>
                 </div>
@@ -64,17 +71,19 @@
 
         <!-- Interested Farmers -->
         <div class="col-lg-6">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Interested Farmers</h5>
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-people me-2 text-success"></i>Interested Farmers
+                    </h5>
                     <span class="badge bg-info">{{ interested_farmers|length }} farmers</span>
                 </div>
                 <div class="card-body">
                     {% if interested_farmers %}
                         <div class="list-group list-group-flush">
                             {% for farmer in interested_farmers %}
-                                <div class="list-group-item px-0">
-                                    <div class="d-flex justify-content-between align-items-start">
+                                <div class="list-group-item px-0 py-2 border-bottom">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-start">
                                         <div>
                                             <div class="d-flex align-items-center mb-1">
                                                 <div class="bg-success rounded-circle me-2 d-flex align-items-center justify-content-center" 
@@ -92,7 +101,7 @@
                                                 </p>
                                                 <p class="mb-0">
                                                     <i class="bi bi-geo-alt me-1"></i> 
-                                                    {{ farmer.farmer.region }}{% if farmer.farmer.district %}, {{ farmer.farmer.district }}{% endif %}
+                                                    {{ farmer.farmer.region|default:"-" }}{% if farmer.farmer.district %}, {{ farmer.farmer.district }}{% endif %}
                                                 </p>
                                                 {% if farmer.farmer.primary_crop %}
                                                     <p class="mb-0">
@@ -102,7 +111,7 @@
                                                 {% endif %}
                                             </div>
                                         </div>
-                                        <div class="text-end">
+                                        <div class="text-end mt-2 mt-sm-0">
                                             <span class="badge bg-success mb-1">Interested</span>
                                             <br>
                                             <small class="text-muted">{{ farmer.created_at|timesince }} ago</small>
@@ -126,9 +135,11 @@
             </div>
 
             <!-- Actions -->
-            <div class="card shadow-sm mt-3">
+            <div class="card shadow-sm border-0 mt-3">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h5>
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-gear me-2 text-success"></i>Actions
+                    </h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex flex-wrap gap-2">

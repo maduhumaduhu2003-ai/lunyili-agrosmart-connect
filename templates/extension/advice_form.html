@@ -3,49 +3,213 @@
 {% block title %}{{ action }} Advice - Extension Officer{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
+
+<div class="extension-advice-form">
+
+    <div class="container py-4">
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Header -->
+                <div class="mb-4">
+                    <h2 class="fw-bold mb-1">
                         <i class="bi bi-file-earmark-plus text-success me-2"></i>
                         {{ action }} Advice Article
-                    </h5>
+                    </h2>
+                    <p class="text-muted">
+                        {% if action == 'Create' %}
+                            Share farming knowledge with farmers in your region
+                        {% else %}
+                            Update your farming advice article
+                        {% endif %}
+                    </p>
+                    <hr>
                 </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        {% for field in form %}
-                            <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">
-                                    {{ field.label }}
-                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
-                                </label>
-                                {{ field }}
-                                {% if field.errors %}
-                                    <div class="text-danger small mt-1">{{ field.errors }}</div>
-                                {% endif %}
-                                {% if field.help_text %}
-                                    <div class="text-muted small">{{ field.help_text }}</div>
-                                {% endif %}
+
+                <!-- Form Card -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-info-circle text-success me-2"></i>
+                            Article Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" data-loading="true" 
+                              data-loading-title="{% if action == 'Create' %}Creating Article{% else %}Updating Article{% endif %}"
+                              data-loading-message="Please wait...">
+                            {% csrf_token %}
+
+                            {% for field in form %}
+                                <div class="mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in field.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+
+                            <div class="d-flex flex-wrap gap-2 mt-4 pt-2 border-top">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    {% if action == 'Create' %}Create{% else %}Update{% endif %} Article
+                                </button>
+                                <a href="{% url 'extension_advice' %}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel
+                                </a>
                             </div>
-                        {% endfor %}
-                        
-                        <div class="d-flex gap-2 mt-3">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle me-1"></i>
-                                {% if action == 'Create' %}Create{% else %}Update{% endif %} Article
-                            </button>
-                            <a href="{% url 'extension_advice' %}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-1"></i> Cancel
-                            </a>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
+
+                <!-- Tips Card -->
+                <div class="card shadow-sm border-0 mt-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-lightbulb text-warning fs-4 me-3"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Tips for writing good advice</h6>
+                                <ul class="text-muted small mb-0 ps-3">
+                                    <li>Keep language simple and easy to understand</li>
+                                    <li>Use practical examples farmers can relate to</li>
+                                    <li>Focus on actionable steps farmers can take</li>
+                                    <li>Include relevant crop-specific information</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.extension-advice-form {
+    min-height: calc(100vh - 76px);
+    padding: 20px 0 55px;
+    background: #f5f8f6;
+}
+
+.extension-advice-form .card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.extension-advice-form .card-header {
+    background: transparent;
+    border-bottom: 1px solid #edf0ee;
+    padding: 1.1rem 1.5rem;
+}
+
+.extension-advice-form .card-body {
+    padding: 1.5rem;
+}
+
+.extension-advice-form h2 {
+    color: #183b29;
+    font-size: 1.8rem;
+    letter-spacing: -0.5px;
+}
+
+.extension-advice-form hr {
+    border-color: #e7ece8;
+    opacity: 1;
+}
+
+.extension-advice-form .form-control,
+.extension-advice-form .form-select {
+    border-radius: 10px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    transition: all .2s ease;
+}
+
+.extension-advice-form .form-control:focus,
+.extension-advice-form .form-select:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.15);
+}
+
+.extension-advice-form .form-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #1c3326;
+}
+
+.extension-advice-form .form-text {
+    color: #8a9a92;
+    font-size: 0.75rem;
+}
+
+.extension-advice-form .btn {
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.4rem;
+}
+
+.extension-advice-form .btn-success {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.extension-advice-form .btn-success:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26,110,62,0.35);
+}
+
+.extension-advice-form .btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.extension-advice-form .btn-secondary:hover {
+    background: #dce1dd;
+    color: #1c3326;
+}
+
+@media (max-width: 768px) {
+    .extension-advice-form {
+        min-height: calc(100vh - 66px);
+        padding: 15px 0 35px;
+    }
+
+    .extension-advice-form h2 {
+        font-size: 1.4rem;
+    }
+
+    .extension-advice-form .card-body {
+        padding: 1.2rem;
+    }
+
+    .extension-advice-form .btn {
+        font-size: 0.8rem;
+        flex: 1;
+    }
+}
+</style>
 {% endblock %}

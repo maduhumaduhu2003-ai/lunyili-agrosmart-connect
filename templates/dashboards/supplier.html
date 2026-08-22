@@ -1,250 +1,2902 @@
 {% extends 'base.html' %}
 
-{% block title %}Supplier Dashboard - AgroSimple{% endblock %}
+{% block title %}Supplier Dashboard - Lunyili AgroSmart{% endblock %}
+
 
 {% block content %}
-<div class="container-fluid px-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex flex-wrap justify-content-between align-items-center">
-                <div>
-                    <h2 class="mb-1 fw-bold">
-                        <i class="bi bi-shop text-success me-2"></i>Supplier Dashboard
-                    </h2>
-                    <p class="text-muted mb-0">
-                        <i class="bi bi-person-circle me-1"></i> Welcome back, <strong>{{ user.full_name }}</strong>
-                    </p>
+
+<div class="supplier-dashboard">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+
+        <!-- =========================================================
+             DASHBOARD HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header">
+
+            <div>
+
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Supplier Portal
                 </div>
-                <div class="d-flex flex-wrap gap-2 mt-2 mt-sm-0">
-                    <a href="{% url 'supplier_products' %}" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-boxes me-1"></i> Products
-                    </a>
-                    <a href="{% url 'supplier_orders' %}" class="btn btn-outline-success btn-sm">
-                        <i class="bi bi-list-check me-1"></i> Orders
-                    </a>
-                    <span class="badge bg-success fs-6 d-flex align-items-center">
-                        <i class="bi bi-person-badge me-1"></i> {{ user.get_role_display }}
+
+                <h1 class="dashboard-title">
+                    Supplier Dashboard
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-person-circle me-1"></i>
+                    Welcome back,
+                    <strong>{{ user.full_name }}</strong>
+                </p>
+
+            </div>
+
+
+            <div class="header-actions">
+
+                <a
+                    href="{% url 'supplier_products' %}"
+                    class="dashboard-action secondary"
+                >
+                    <i class="bi bi-boxes"></i>
+                    <span>Products</span>
+                </a>
+
+
+                <a
+                    href="{% url 'supplier_orders' %}"
+                    class="dashboard-action primary"
+                >
+                    <i class="bi bi-list-check"></i>
+                    <span>Orders</span>
+                </a>
+
+
+                <div class="role-badge">
+
+                    <i class="bi bi-person-badge"></i>
+
+                    {{ user.get_role_display }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================================================
+             STATISTICS
+        ========================================================== -->
+
+        <div class="stats-grid">
+
+
+            <!-- Products -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div>
+
+                        <span class="stat-label">
+                            Products
+                        </span>
+
+                        <h2>
+                            {{ total_products|default:0 }}
+                        </h2>
+
+                    </div>
+
+                    <div class="stat-icon green">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+
+                </div>
+
+                <div class="stat-footer">
+
+                    <span class="stat-indicator green-text">
+                        <i class="bi bi-check-circle-fill"></i>
+                        {{ active_products|default:0 }} active
                     </span>
-                </div>
-            </div>
-            <hr class="mt-2">
-        </div>
-    </div>
 
-    <!-- Stats Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="card bg-primary text-white shadow-sm border-0 h-100">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title opacity-75 mb-0">Products</h6>
-                            <h2 class="display-5 fw-bold mb-0">{{ total_products|default:0 }}</h2>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded-circle p-2">
-                            <i class="bi bi-boxes fs-4"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">{{ active_products|default:0 }} active</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card bg-success text-white shadow-sm border-0 h-100">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title opacity-75 mb-0">Orders</h6>
-                            <h2 class="display-5 fw-bold mb-0">{{ total_orders|default:0 }}</h2>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded-circle p-2">
-                            <i class="bi bi-cart-check fs-4"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">{{ delivered_orders|default:0 }} delivered</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card bg-warning text-dark shadow-sm border-0 h-100">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title opacity-75 mb-0">Pending</h6>
-                            <h2 class="display-5 fw-bold mb-0">{{ pending_orders|default:0 }}</h2>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded-circle p-2">
-                            <i class="bi bi-clock-history fs-4"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Awaiting action</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card bg-info text-white shadow-sm border-0 h-100">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title opacity-75 mb-0">Accepted</h6>
-                            <h2 class="display-5 fw-bold mb-0">{{ accepted_orders|default:0 }}</h2>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded-circle p-2">
-                            <i class="bi bi-check-all fs-4"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">In progress</small>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <span>
+                        Inventory
+                    </span>
 
-    <!-- Main Content -->
-    <div class="row g-4">
-        <!-- Recent Orders -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-list-ul text-success me-2"></i>Recent Orders
-                    </h5>
-                    <a href="{% url 'supplier_orders' %}" class="btn btn-sm btn-outline-primary">
-                        View All <i class="bi bi-chevron-right ms-1"></i>
+                </div>
+
+            </div>
+
+
+            <!-- Orders -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div>
+
+                        <span class="stat-label">
+                            Total Orders
+                        </span>
+
+                        <h2>
+                            {{ total_orders|default:0 }}
+                        </h2>
+
+                    </div>
+
+                    <div class="stat-icon blue">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+
+                </div>
+
+                <div class="stat-footer">
+
+                    <span class="stat-indicator blue-text">
+                        <i class="bi bi-arrow-up-right"></i>
+                        Orders
+                    </span>
+
+                    <span>
+                        All time
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Pending -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div>
+
+                        <span class="stat-label">
+                            Pending
+                        </span>
+
+                        <h2>
+                            {{ pending_orders|default:0 }}
+                        </h2>
+
+                    </div>
+
+                    <div class="stat-icon orange">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+
+                </div>
+
+                <div class="stat-footer">
+
+                    <span class="stat-indicator orange-text">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        Awaiting action
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Accepted -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div>
+
+                        <span class="stat-label">
+                            Accepted
+                        </span>
+
+                        <h2>
+                            {{ accepted_orders|default:0 }}
+                        </h2>
+
+                    </div>
+
+                    <div class="stat-icon purple">
+                        <i class="bi bi-check-all"></i>
+                    </div>
+
+                </div>
+
+                <div class="stat-footer">
+
+                    <span class="stat-indicator purple-text">
+                        <i class="bi bi-arrow-repeat"></i>
+                        In progress
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================================================
+             MAIN GRID
+        ========================================================== -->
+
+        <div class="dashboard-grid">
+
+
+            <!-- =====================================================
+                 RECENT ORDERS
+            ====================================================== -->
+
+            <div class="dashboard-panel orders-panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <div class="panel-title">
+
+                            <span class="panel-title-icon">
+                                <i class="bi bi-receipt"></i>
+                            </span>
+
+                            Recent Orders
+
+                        </div>
+
+                        <p class="panel-subtitle">
+                            Latest orders from farmers
+                        </p>
+
+                    </div>
+
+
+                    <a
+                        href="{% url 'supplier_orders' %}"
+                        class="view-all"
+                    >
+                        View all
+                        <i class="bi bi-arrow-right"></i>
                     </a>
+
                 </div>
-                <div class="card-body pt-0">
+
+
+                <div class="panel-body">
+
+
                     {% if recent_orders %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+
+
+                        <div class="orders-table-wrapper">
+
+                            <table class="orders-table">
+
+                                <thead>
+
                                     <tr>
-                                        <th>Order #</th>
-                                        <th>Farmer</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
+
+                                        <th>
+                                            Order
+                                        </th>
+
+                                        <th>
+                                            Farmer
+                                        </th>
+
+                                        <th>
+                                            Location
+                                        </th>
+
+                                        <th>
+                                            Amount
+                                        </th>
+
+                                        <th>
+                                            Status
+                                        </th>
+
+                                        <th>
+                                            Date
+                                        </th>
+
                                     </tr>
+
                                 </thead>
+
+
                                 <tbody>
+
                                     {% for order in recent_orders %}
-                                        <tr>
-                                            <td>
-                                                <span class="fw-bold text-primary">{{ order.reference }}</span>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="bg-light rounded-circle me-2 p-1">
-                                                        <i class="bi bi-person fs-6"></i>
-                                                    </div>
-                                                    {{ order.farmer.full_name|default:"-" }}
+
+                                    <tr>
+
+
+                                        <!-- Order -->
+
+                                        <td>
+
+                                            <span class="order-reference">
+                                                {{ order.reference }}
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- Farmer -->
+
+                                        <td>
+
+                                            <div class="farmer-cell">
+
+                                                <div class="farmer-avatar">
+
+                                                    <i class="bi bi-person-fill"></i>
+
                                                 </div>
-                                            </td>
-                                            <td>
-                                                <span class="fw-bold">TSh {{ order.total_amount|floatformat:0|default:"0" }}</span>
-                                            </td>
-                                            <td>
-                                                <span class="badge {% if order.status == 'PENDING' %}bg-warning{% elif order.status == 'ACCEPTED' %}bg-info{% elif order.status == 'DISPATCHED' %}bg-primary{% elif order.status == 'DELIVERED' %}bg-success{% else %}bg-secondary{% endif %}">
-                                                    {{ order.get_status_display|default:"-" }}
+
+                                                <span>
+                                                    {{ order.farmer.full_name|default:"-" }}
                                                 </span>
-                                            </td>
-                                            <td class="text-muted small">{{ order.created_at|date:"d M Y" }}</td>
-                                        </tr>
+
+                                            </div>
+
+                                        </td>
+
+
+                                        <!-- Location -->
+
+                                        <td>
+
+                                            <div class="location-cell">
+
+                                                <i class="bi bi-geo-alt"></i>
+
+                                                <span>
+                                                    {{ order.delivery_address|truncatechars:30|default:"-" }}
+                                                </span>
+
+                                            </div>
+
+                                        </td>
+
+
+                                        <!-- Amount -->
+
+                                        <td>
+
+                                            <span class="amount">
+
+                                                TSh
+                                                {{ order.total_amount|floatformat:0|default:"0" }}
+
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- Status -->
+
+                                        <td>
+
+                                            <span
+                                                class="
+                                                    order-status
+                                                    {% if order.status == 'PENDING' %}
+                                                        pending
+                                                    {% elif order.status == 'ACCEPTED' %}
+                                                        accepted
+                                                    {% elif order.status == 'DISPATCHED' %}
+                                                        dispatched
+                                                    {% elif order.status == 'DELIVERED' %}
+                                                        delivered
+                                                    {% else %}
+                                                        other
+                                                    {% endif %}
+                                                "
+                                            >
+
+                                                <span class="status-dot"></span>
+
+                                                {{ order.get_status_display|default:"-" }}
+
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- Date -->
+
+                                        <td>
+
+                                            <span class="order-date">
+
+                                                {{ order.created_at|date:"d M Y" }}
+
+                                            </span>
+
+                                        </td>
+
+
+                                    </tr>
+
                                     {% endfor %}
+
                                 </tbody>
+
                             </table>
+
                         </div>
+
+
                     {% else %}
-                        <div class="text-center py-5">
-                            <i class="bi bi-inbox display-1 text-muted d-block mb-3"></i>
-                            <h5 class="text-muted">No orders yet</h5>
-                            <p class="text-muted small">When farmers place orders, they will appear here.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Quick Actions -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-gear text-success me-2"></i>Quick Actions
-                    </h5>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'supplier_product_create' %}" class="btn btn-success">
-                            <i class="bi bi-plus-circle me-1"></i> Add Product
-                        </a>
-                        <a href="{% url 'supplier_products' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-boxes me-1"></i> Manage Products
-                        </a>
-                        <a href="{% url 'supplier_orders' %}" class="btn btn-outline-info">
-                            <i class="bi bi-list-check me-1"></i> View All Orders
-                        </a>
-                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-person me-1"></i> Update Profile
-                        </a>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Company Info -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-building text-success me-2"></i>Company Info
-                    </h5>
-                </div>
-                <div class="card-body pt-0">
-                    {% if supplier %}
-                        <div class="d-flex align-items-center mb-3">
-                            {% if supplier.logo %}
-                                <img src="{{ supplier.logo.url }}" alt="{{ supplier.company_name }}" 
-                                     class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                            {% else %}
-                                <div class="bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" 
-                                     style="width: 50px; height: 50px;">
-                                    <i class="bi bi-building fs-3 text-secondary"></i>
-                                </div>
-                            {% endif %}
-                            <div>
-                                <h6 class="mb-0 fw-bold">{{ supplier.company_name }}</h6>
-                                <span class="badge {% if supplier.is_verified == 'VERIFIED' %}bg-success{% else %}bg-warning{% endif %}">
-                                    {{ supplier.get_is_verified_display|default:"Pending" }}
-                                </span>
+                        <div class="empty-state">
+
+                            <div class="empty-icon">
+                                <i class="bi bi-inbox"></i>
                             </div>
-                        </div>
-                        
-                        <div class="small text-muted">
-                            <p class="mb-1">
-                                <i class="bi bi-telephone me-2 text-success"></i>
-                                {{ supplier.phone|default:"-" }}
+
+                            <h5>
+                                No orders yet
+                            </h5>
+
+                            <p>
+                                When farmers place orders,
+                                they will appear here.
                             </p>
-                            <p class="mb-1">
-                                <i class="bi bi-envelope me-2 text-success"></i>
-                                {{ supplier.email|default:"-" }}
-                            </p>
-                            <p class="mb-0">
-                                <i class="bi bi-geo-alt me-2 text-success"></i>
-                                {{ supplier.location|default:"-" }}
-                            </p>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-3">
-                            <i class="bi bi-info-circle display-4 text-warning d-block mb-2"></i>
-                            <p class="text-muted mb-2">Complete your supplier profile to start selling</p>
-                            <a href="{% url 'supplier_profile_create' %}" class="btn btn-success w-100">
-                                <i class="bi bi-building me-1"></i> Create Profile
+
+                            <a
+                                href="{% url 'supplier_products' %}"
+                                class="btn btn-success"
+                            >
+                                <i class="bi bi-boxes me-1"></i>
+                                Manage Products
                             </a>
+
                         </div>
+
+
                     {% endif %}
+
                 </div>
+
             </div>
+
+
+
+            <!-- =====================================================
+                 RIGHT SIDEBAR
+            ====================================================== -->
+
+            <div class="dashboard-sidebar">
+
+
+                <!-- ================================================
+                     QUICK ACTIONS
+                ================================================= -->
+
+                <div class="dashboard-panel">
+
+                    <div class="panel-header compact">
+
+                        <div>
+
+                            <div class="panel-title">
+
+                                <span class="panel-title-icon">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                </span>
+
+                                Quick Actions
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-actions">
+
+
+                        <a
+                            href="{% url 'supplier_product_create' %}"
+                            class="quick-action primary-action"
+                        >
+
+                            <span class="quick-action-icon">
+                                <i class="bi bi-plus-lg"></i>
+                            </span>
+
+                            <span class="quick-action-content">
+
+                                <strong>
+                                    Add Product
+                                </strong>
+
+                                <small>
+                                    List a new product
+                                </small>
+
+                            </span>
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+
+                        <a
+                            href="{% url 'supplier_products' %}"
+                            class="quick-action"
+                        >
+
+                            <span class="quick-action-icon blue-bg">
+                                <i class="bi bi-boxes"></i>
+                            </span>
+
+                            <span class="quick-action-content">
+
+                                <strong>
+                                    Manage Products
+                                </strong>
+
+                                <small>
+                                    View your inventory
+                                </small>
+
+                            </span>
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+
+                        <a
+                            href="{% url 'supplier_orders' %}"
+                            class="quick-action"
+                        >
+
+                            <span class="quick-action-icon orange-bg">
+                                <i class="bi bi-list-check"></i>
+                            </span>
+
+                            <span class="quick-action-content">
+
+                                <strong>
+                                    View Orders
+                                </strong>
+
+                                <small>
+                                    Manage customer orders
+                                </small>
+
+                            </span>
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+
+                        <a
+                            href="{% url 'profile' %}"
+                            class="quick-action"
+                        >
+
+                            <span class="quick-action-icon gray-bg">
+                                <i class="bi bi-person"></i>
+                            </span>
+
+                            <span class="quick-action-content">
+
+                                <strong>
+                                    Update Profile
+                                </strong>
+
+                                <small>
+                                    Manage your account
+                                </small>
+
+                            </span>
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ================================================
+                     COMPANY INFORMATION
+                ================================================= -->
+
+                <div class="dashboard-panel company-panel">
+
+                    <div class="panel-header compact">
+
+                        <div>
+
+                            <div class="panel-title">
+
+                                <span class="panel-title-icon">
+                                    <i class="bi bi-building"></i>
+                                </span>
+
+                                Company Profile
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="company-body">
+
+
+                        {% if supplier %}
+
+
+                            <!-- Company -->
+
+                            <div class="company-heading">
+
+
+                                {% if supplier.logo %}
+
+                                    <img
+                                        src="{{ supplier.logo.url }}"
+                                        alt="{{ supplier.company_name }}"
+                                        class="company-logo"
+                                    >
+
+                                {% else %}
+
+                                    <div class="company-logo placeholder">
+
+                                        <i class="bi bi-building"></i>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div class="company-name">
+
+                                    <h5>
+                                        {{ supplier.company_name }}
+                                    </h5>
+
+                                    <span
+                                        class="
+                                            verification-badge
+                                            {% if supplier.is_verified == 'VERIFIED' %}
+                                                verified
+                                            {% else %}
+                                                pending
+                                            {% endif %}
+                                        "
+                                    >
+
+                                        {% if supplier.is_verified == 'VERIFIED' %}
+
+                                            <i class="bi bi-patch-check-fill"></i>
+
+                                        {% else %}
+
+                                            <i class="bi bi-clock"></i>
+
+                                        {% endif %}
+
+                                        {{ supplier.get_is_verified_display|default:"Pending" }}
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- Location -->
+
+                            <div class="company-section">
+
+                                <div class="company-section-label">
+
+                                    <i class="bi bi-geo-alt-fill"></i>
+
+                                    Business Location
+
+                                </div>
+
+
+                                <div class="location-tags">
+
+                                    {% if supplier.region %}
+
+                                        <span class="location-tag green">
+                                            {{ supplier.region }}
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    {% if supplier.district %}
+
+                                        <span class="location-tag blue">
+                                            {{ supplier.district }}
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    {% if supplier.ward %}
+
+                                        <span class="location-tag gray">
+                                            {{ supplier.ward }}
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    {% if supplier.village %}
+
+                                        <span class="location-tag gray">
+                                            {{ supplier.village }}
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    {% if not supplier.region and not supplier.district %}
+
+                                        <span class="location-empty">
+                                            Location not set
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- Contact -->
+
+                            <div class="company-contact">
+
+
+                                <div class="contact-row">
+
+                                    <span class="contact-icon">
+                                        <i class="bi bi-telephone"></i>
+                                    </span>
+
+                                    <div>
+
+                                        <small>
+                                            Phone
+                                        </small>
+
+                                        <strong>
+                                            {{ supplier.phone|default:"-" }}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="contact-row">
+
+                                    <span class="contact-icon">
+                                        <i class="bi bi-envelope"></i>
+                                    </span>
+
+                                    <div>
+
+                                        <small>
+                                            Email
+                                        </small>
+
+                                        <strong>
+                                            {{ supplier.email|default:"-" }}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="contact-row">
+
+                                    <span class="contact-icon">
+                                        <i class="bi bi-pin-map"></i>
+                                    </span>
+
+                                    <div>
+
+                                        <small>
+                                            Address
+                                        </small>
+
+                                        <strong>
+                                            {{ supplier.location|default:"-" }}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+
+
+                            <!-- Edit -->
+
+                            <a
+                                href="{% url 'supplier_profile_edit' %}"
+                                class="profile-edit-button"
+                            >
+
+                                <i class="bi bi-pencil"></i>
+
+                                Update Location
+
+                            </a>
+
+
+                        {% else %}
+
+
+                            <!-- No Supplier Profile -->
+
+                            <div class="profile-empty">
+
+                                <div class="profile-empty-icon">
+
+                                    <i class="bi bi-building"></i>
+
+                                </div>
+
+                                <h5>
+                                    Complete your profile
+                                </h5>
+
+                                <p>
+                                    Add your company information
+                                    before you start selling.
+                                </p>
+
+                                <a
+                                    href="{% url 'supplier_profile_create' %}"
+                                    class="btn btn-success w-100"
+                                >
+
+                                    <i class="bi bi-building me-1"></i>
+
+                                    Create Supplier Profile
+
+                                </a>
+
+                            </div>
+
+
+                        {% endif %}
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+
+
+{% block extra_css %}
+
+<style>
+
+/* ============================================================
+   DASHBOARD BASE
+============================================================ */
+
+.supplier-dashboard {
+
+    min-height:
+        calc(100vh - 76px);
+
+    padding:
+        0;
+
+    background:
+        #f5f8f6;
+}
+
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.dashboard-header {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        flex-end;
+
+    gap:
+        25px;
+
+    margin-bottom:
+        30px;
+
+}
+
+
+.welcome-label {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        7px;
+
+    color:
+        #21874b;
+
+    font-size:
+        0.72rem;
+
+    font-weight:
+        800;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        1px;
+
+    margin-bottom:
+        7px;
+}
+
+
+.welcome-dot {
+
+    width:
+        7px;
+
+    height:
+        7px;
+
+    border-radius:
+        50%;
+
+    background:
+        #2d8f4e;
+
+    box-shadow:
+        0 0 0 4px rgba(45,143,78,0.1);
+}
+
+
+.dashboard-title {
+
+    margin:
+        0;
+
+    color:
+        #183b29;
+
+    font-size:
+        2rem;
+
+    font-weight:
+        800;
+
+    letter-spacing:
+        -1px;
+}
+
+
+.dashboard-subtitle {
+
+    margin:
+        7px 0 0;
+
+    color:
+        #7c8881;
+
+    font-size:
+        0.85rem;
+}
+
+
+.dashboard-subtitle strong {
+
+    color:
+        #36483d;
+}
+
+
+.header-actions {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        9px;
+
+    flex-wrap:
+        wrap;
+}
+
+
+.dashboard-action {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        7px;
+
+    min-height:
+        39px;
+
+    padding:
+        0 13px;
+
+    border-radius:
+        9px;
+
+    font-size:
+        0.77rem;
+
+    font-weight:
+        700;
+
+    text-decoration:
+        none;
+
+    transition:
+        all .2s ease;
+}
+
+
+.dashboard-action.secondary {
+
+    color:
+        #315dcb;
+
+    border:
+        1px solid #d9e1f5;
+
+    background:
+        #fff;
+}
+
+
+.dashboard-action.primary {
+
+    color:
+        #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #1a6e3e,
+            #2d8f4e
+        );
+
+    box-shadow:
+        0 4px 12px rgba(26,110,62,.15);
+}
+
+
+.dashboard-action:hover {
+
+    transform:
+        translateY(-1px);
+}
+
+
+.role-badge {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+    min-height:
+        39px;
+
+    padding:
+        0 12px;
+
+    border-radius:
+        9px;
+
+    color:
+        #1a6e3e;
+
+    background:
+        #e7f5eb;
+
+    font-size:
+        0.73rem;
+
+    font-weight:
+        700;
+}
+
+
+/* ============================================================
+   STATS
+============================================================ */
+
+.stats-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap:
+        16px;
+
+    margin-bottom:
+        22px;
+}
+
+
+.stat-card {
+
+    padding:
+        21px;
+
+    background:
+        #fff;
+
+    border:
+        1px solid #e7ece8;
+
+    border-radius:
+        16px;
+
+    box-shadow:
+        0 3px 15px rgba(27,67,43,.045);
+
+    transition:
+        all .25s ease;
+}
+
+
+.stat-card:hover {
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 10px 25px rgba(27,67,43,.08);
+}
+
+
+.stat-top {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        flex-start;
+}
+
+
+.stat-label {
+
+    display:
+        block;
+
+    margin-bottom:
+        5px;
+
+    color:
+        #829088;
+
+    font-size:
+        .73rem;
+
+    font-weight:
+        700;
+}
+
+
+.stat-card h2 {
+
+    margin:
+        0;
+
+    color:
+        #1c3326;
+
+    font-size:
+        2rem;
+
+    font-weight:
+        800;
+
+    letter-spacing:
+        -1px;
+}
+
+
+.stat-icon {
+
+    width:
+        45px;
+
+    height:
+        45px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        12px;
+
+    font-size:
+        1.15rem;
+}
+
+
+.stat-icon.green {
+
+    color:
+        #1f8249;
+
+    background:
+        #e8f6ec;
+}
+
+
+.stat-icon.blue {
+
+    color:
+        #2869d6;
+
+    background:
+        #edf3ff;
+}
+
+
+.stat-icon.orange {
+
+    color:
+        #d58a0a;
+
+    background:
+        #fff5df;
+}
+
+
+.stat-icon.purple {
+
+    color:
+        #7853c7;
+
+    background:
+        #f2edff;
+}
+
+
+.stat-footer {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    margin-top:
+        17px;
+
+    padding-top:
+        12px;
+
+    border-top:
+        1px solid #eef1ef;
+
+    color:
+        #a0aaa4;
+
+    font-size:
+        .68rem;
+}
+
+
+.stat-indicator {
+
+    font-weight:
+        700;
+}
+
+
+.green-text {
+    color: #21874b;
+}
+
+
+.blue-text {
+    color: #3972d4;
+}
+
+
+.orange-text {
+    color: #c88616;
+}
+
+
+.purple-text {
+    color: #7653c4;
+}
+
+
+/* ============================================================
+   MAIN GRID
+============================================================ */
+
+.dashboard-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        minmax(0, 2fr) minmax(300px, .9fr);
+
+    gap:
+        20px;
+
+    align-items:
+        start;
+}
+
+
+.dashboard-sidebar {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        20px;
+}
+
+
+/* ============================================================
+   PANEL
+============================================================ */
+
+.dashboard-panel {
+
+    background:
+        #fff;
+
+    border:
+        1px solid #e6ebe7;
+
+    border-radius:
+        16px;
+
+    box-shadow:
+        0 3px 15px rgba(27,67,43,.045);
+
+    overflow:
+        hidden;
+}
+
+
+.panel-header {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    padding:
+        19px 21px;
+
+    border-bottom:
+        1px solid #edf0ee;
+}
+
+
+.panel-header.compact {
+
+    padding:
+        17px 19px;
+}
+
+
+.panel-title {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        9px;
+
+    color:
+        #1c3326;
+
+    font-size:
+        .9rem;
+
+    font-weight:
+        800;
+}
+
+
+.panel-title-icon {
+
+    width:
+        32px;
+
+    height:
+        32px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        9px;
+
+    color:
+        #21874b;
+
+    background:
+        #e9f6ed;
+
+    font-size:
+        .82rem;
+}
+
+
+.panel-subtitle {
+
+    margin:
+        4px 0 0 41px;
+
+    color:
+        #9aa39e;
+
+    font-size:
+        .68rem;
+}
+
+
+.view-all {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        5px;
+
+    color:
+        #21874b;
+
+    font-size:
+        .73rem;
+
+    font-weight:
+        700;
+
+    text-decoration:
+        none;
+}
+
+
+.view-all:hover {
+
+    color:
+        #145a32;
+}
+
+
+.panel-body {
+
+    padding:
+        0;
+}
+
+
+/* ============================================================
+   ORDERS TABLE
+============================================================ */
+
+.orders-table-wrapper {
+
+    overflow-x:
+        auto;
+}
+
+
+.orders-table {
+
+    width:
+        100%;
+
+    border-collapse:
+        collapse;
+
+    min-width:
+        750px;
+}
+
+
+.orders-table th {
+
+    padding:
+        12px 18px;
+
+    color:
+        #8a948e;
+
+    background:
+        #fafcfb;
+
+    border-bottom:
+        1px solid #edf0ee;
+
+    font-size:
+        .65rem;
+
+    font-weight:
+        800;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        .4px;
+
+    white-space:
+        nowrap;
+}
+
+
+.orders-table td {
+
+    padding:
+        15px 18px;
+
+    border-bottom:
+        1px solid #f0f2f1;
+
+    color:
+        #526159;
+
+    font-size:
+        .74rem;
+}
+
+
+.orders-table tbody tr {
+
+    transition:
+        background .15s ease;
+}
+
+
+.orders-table tbody tr:hover {
+
+    background:
+        #f9fcfa;
+}
+
+
+.orders-table tbody tr:last-child td {
+
+    border-bottom:
+        none;
+}
+
+
+.order-reference {
+
+    color:
+        #2d69c7;
+
+    font-weight:
+        800;
+
+    font-size:
+        .73rem;
+}
+
+
+.farmer-cell {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    color:
+        #394b40;
+
+    font-weight:
+        600;
+}
+
+
+.farmer-avatar {
+
+    width:
+        29px;
+
+    height:
+        29px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        50%;
+
+    color:
+        #21874b;
+
+    background:
+        #e8f5eb;
+
+    font-size:
+        .7rem;
+}
+
+
+.location-cell {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        5px;
+
+    max-width:
+        190px;
+
+    color:
+        #89938d;
+}
+
+
+.location-cell i {
+
+    color:
+        #21874b;
+}
+
+
+.location-cell span {
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+}
+
+
+.amount {
+
+    color:
+        #25392d;
+
+    font-weight:
+        800;
+
+    white-space:
+        nowrap;
+}
+
+
+.order-status {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+    padding:
+        5px 8px;
+
+    border-radius:
+        7px;
+
+    font-size:
+        .63rem;
+
+    font-weight:
+        800;
+
+    white-space:
+        nowrap;
+}
+
+
+.status-dot {
+
+    width:
+        6px;
+
+    height:
+        6px;
+
+    border-radius:
+        50%;
+
+    background:
+        currentColor;
+}
+
+
+.order-status.pending {
+
+    color:
+        #a96d00;
+
+    background:
+        #fff5dc;
+}
+
+
+.order-status.accepted {
+
+    color:
+        #087e9d;
+
+    background:
+        #e3f7fc;
+}
+
+
+.order-status.dispatched {
+
+    color:
+        #2468c4;
+
+    background:
+        #eaf2ff;
+}
+
+
+.order-status.delivered {
+
+    color:
+        #177a43;
+
+    background:
+        #e7f6ec;
+}
+
+
+.order-status.other {
+
+    color:
+        #66716b;
+
+    background:
+        #f0f2f1;
+}
+
+
+.order-date {
+
+    color:
+        #8b958f;
+
+    white-space:
+        nowrap;
+}
+
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+
+.empty-state {
+
+    text-align:
+        center;
+
+    padding:
+        65px 25px;
+}
+
+
+.empty-icon {
+
+    width:
+        68px;
+
+    height:
+        68px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    margin:
+        0 auto 16px;
+
+    border-radius:
+        18px;
+
+    color:
+        #8d9991;
+
+    background:
+        #f1f4f2;
+
+    font-size:
+        1.8rem;
+}
+
+
+.empty-state h5 {
+
+    color:
+        #4d5d54;
+
+    font-size:
+        .95rem;
+
+    font-weight:
+        800;
+}
+
+
+.empty-state p {
+
+    margin-bottom:
+        20px;
+
+    color:
+        #9aa39e;
+
+    font-size:
+        .76rem;
+}
+
+
+/* ============================================================
+   QUICK ACTIONS
+============================================================ */
+
+.quick-actions {
+
+    padding:
+        8px 12px 12px;
+}
+
+
+.quick-action {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        11px;
+
+    padding:
+        12px 8px;
+
+    border-bottom:
+        1px solid #f0f2f1;
+
+    color:
+        #405047;
+
+    text-decoration:
+        none;
+
+    transition:
+        all .2s ease;
+}
+
+
+.quick-action:last-child {
+
+    border-bottom:
+        none;
+}
+
+
+.quick-action:hover {
+
+    padding-left:
+        12px;
+
+    color:
+        #1a6e3e;
+
+    background:
+        #fafcfb;
+
+    border-radius:
+        9px;
+}
+
+
+.quick-action-icon {
+
+    width:
+        38px;
+
+    height:
+        38px;
+
+    flex-shrink:
+        0;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        10px;
+
+    color:
+        #fff;
+
+    background:
+        #21874b;
+}
+
+
+.quick-action-icon.blue-bg {
+
+    color:
+        #2869d6;
+
+    background:
+        #edf3ff;
+}
+
+
+.quick-action-icon.orange-bg {
+
+    color:
+        #c88616;
+
+    background:
+        #fff5df;
+}
+
+
+.quick-action-icon.gray-bg {
+
+    color:
+        #65716a;
+
+    background:
+        #eef1ef;
+}
+
+
+.quick-action-content {
+
+    flex:
+        1;
+}
+
+
+.quick-action-content strong {
+
+    display:
+        block;
+
+    color:
+        #35483d;
+
+    font-size:
+        .73rem;
+}
+
+
+.quick-action-content small {
+
+    display:
+        block;
+
+    margin-top:
+        2px;
+
+    color:
+        #a0aaa4;
+
+    font-size:
+        .63rem;
+}
+
+
+.quick-action > .bi-chevron-right {
+
+    color:
+        #b1b9b4;
+
+    font-size:
+        .7rem;
+}
+
+
+/* ============================================================
+   COMPANY
+============================================================ */
+
+.company-body {
+
+    padding:
+        18px;
+}
+
+
+.company-heading {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        11px;
+
+    margin-bottom:
+        18px;
+}
+
+
+.company-logo {
+
+    width:
+        50px;
+
+    height:
+        50px;
+
+    flex-shrink:
+        0;
+
+    object-fit:
+        cover;
+
+    border-radius:
+        13px;
+
+    border:
+        1px solid #e4ebe6;
+}
+
+
+.company-logo.placeholder {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    color:
+        #8c9790;
+
+    background:
+        #f0f3f1;
+
+    font-size:
+        1.2rem;
+}
+
+
+.company-name {
+
+    min-width:
+        0;
+}
+
+
+.company-name h5 {
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+
+    margin:
+        0 0 5px;
+
+    color:
+        #263b2e;
+
+    font-size:
+        .82rem;
+
+    font-weight:
+        800;
+}
+
+
+.verification-badge {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        4px;
+
+    padding:
+        4px 7px;
+
+    border-radius:
+        6px;
+
+    font-size:
+        .58rem;
+
+    font-weight:
+        800;
+}
+
+
+.verification-badge.verified {
+
+    color:
+        #177a43;
+
+    background:
+        #e7f6ec;
+}
+
+
+.verification-badge.pending {
+
+    color:
+        #a96d00;
+
+    background:
+        #fff5dc;
+}
+
+
+/* ============================================================
+   COMPANY SECTIONS
+============================================================ */
+
+.company-section {
+
+    padding:
+        13px;
+
+    margin-bottom:
+        15px;
+
+    border:
+        1px solid #edf0ee;
+
+    border-radius:
+        11px;
+
+    background:
+        #fafcfb;
+}
+
+
+.company-section-label {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        5px;
+
+    margin-bottom:
+        9px;
+
+    color:
+        #758078;
+
+    font-size:
+        .66rem;
+
+    font-weight:
+        800;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        .4px;
+}
+
+
+.company-section-label i {
+
+    color:
+        #21874b;
+}
+
+
+.location-tags {
+
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        5px;
+}
+
+
+.location-tag {
+
+    padding:
+        5px 7px;
+
+    border-radius:
+        6px;
+
+    font-size:
+        .61rem;
+
+    font-weight:
+        700;
+}
+
+
+.location-tag.green {
+
+    color:
+        #177a43;
+
+    background:
+        #e7f6ec;
+}
+
+
+.location-tag.blue {
+
+    color:
+        #2869d6;
+
+    background:
+        #edf3ff;
+}
+
+
+.location-tag.gray {
+
+    color:
+        #65716a;
+
+    background:
+        #edf0ee;
+}
+
+
+.location-empty {
+
+    color:
+        #9aa39e;
+
+    font-size:
+        .68rem;
+}
+
+
+/* ============================================================
+   CONTACT
+============================================================ */
+
+.company-contact {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        13px;
+
+    margin-bottom:
+        17px;
+}
+
+
+.contact-row {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        10px;
+}
+
+
+.contact-icon {
+
+    width:
+        30px;
+
+    height:
+        30px;
+
+    flex-shrink:
+        0;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        8px;
+
+    color:
+        #21874b;
+
+    background:
+        #e9f6ed;
+
+    font-size:
+        .72rem;
+}
+
+
+.contact-row small {
+
+    display:
+        block;
+
+    color:
+        #9aa39e;
+
+    font-size:
+        .59rem;
+
+    margin-bottom:
+        2px;
+}
+
+
+.contact-row strong {
+
+    display:
+        block;
+
+    max-width:
+        220px;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+
+    color:
+        #435349;
+
+    font-size:
+        .68rem;
+
+    font-weight:
+        600;
+}
+
+
+.profile-edit-button {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        7px;
+
+    width:
+        100%;
+
+    min-height:
+        38px;
+
+    border:
+        1px solid #d8e1da;
+
+    border-radius:
+        9px;
+
+    color:
+        #21874b;
+
+    background:
+        #fff;
+
+    font-size:
+        .7rem;
+
+    font-weight:
+        700;
+
+    text-decoration:
+        none;
+
+    transition:
+        all .2s ease;
+}
+
+
+.profile-edit-button:hover {
+
+    color:
+        #fff;
+
+    background:
+        #21874b;
+
+    border-color:
+        #21874b;
+}
+
+
+/* ============================================================
+   EMPTY PROFILE
+============================================================ */
+
+.profile-empty {
+
+    text-align:
+        center;
+
+    padding:
+        20px 5px 5px;
+}
+
+
+.profile-empty-icon {
+
+    width:
+        58px;
+
+    height:
+        58px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    margin:
+        0 auto 13px;
+
+    border-radius:
+        16px;
+
+    color:
+        #bd841b;
+
+    background:
+        #fff6df;
+
+    font-size:
+        1.4rem;
+}
+
+
+.profile-empty h5 {
+
+    margin-bottom:
+        7px;
+
+    color:
+        #405047;
+
+    font-size:
+        .85rem;
+
+    font-weight:
+        800;
+}
+
+
+.profile-empty p {
+
+    margin-bottom:
+        17px;
+
+    color:
+        #929c96;
+
+    font-size:
+        .7rem;
+
+    line-height:
+        1.6;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 1100px) {
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+
+    .dashboard-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .dashboard-sidebar {
+
+        display:
+            grid;
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        align-items:
+            start;
+
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .supplier-dashboard {
+
+        padding:
+            0;
+
+    }
+
+
+    .dashboard-header {
+
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+
+        margin-bottom:
+            22px;
+
+    }
+
+
+    .dashboard-title {
+
+        font-size:
+            1.65rem;
+
+    }
+
+
+    .header-actions {
+
+        width:
+            100%;
+
+    }
+
+
+    .dashboard-action {
+
+        flex:
+            1;
+
+        justify-content:
+            center;
+
+    }
+
+
+    .role-badge {
+
+        display:
+            none;
+
+    }
+
+
+    .dashboard-sidebar {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        gap:
+            10px;
+
+    }
+
+
+    .stat-card {
+
+        padding:
+            15px;
+
+        border-radius:
+            13px;
+
+    }
+
+
+    .stat-card h2 {
+
+        font-size:
+            1.5rem;
+
+    }
+
+
+    .stat-icon {
+
+        width:
+            37px;
+
+        height:
+            37px;
+
+        font-size:
+            .95rem;
+
+    }
+
+
+    .stat-footer {
+
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+
+        gap:
+            3px;
+
+    }
+
+
+    .panel-header {
+
+        padding:
+            15px;
+
+    }
+
+
+    .dashboard-title {
+
+        font-size:
+            1.45rem;
+
+    }
+
+
+    .dashboard-subtitle {
+
+        font-size:
+            .75rem;
+
+    }
+
+
+    .view-all {
+
+        font-size:
+            .68rem;
+
+    }
+
+
+    .panel-title {
+
+        font-size:
+            .82rem;
+
+    }
+
+
+    .orders-table th,
+    .orders-table td {
+
+        padding:
+            12px 13px;
+
+    }
+
+
+    .empty-state {
+
+        padding:
+            50px 18px;
+
+    }
+
+}
+
+</style>
+
 {% endblock %}

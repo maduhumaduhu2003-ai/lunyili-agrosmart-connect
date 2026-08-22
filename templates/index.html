@@ -1,192 +1,1221 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Welcome - AgroSimple{% endblock %}
+{% block title %}AgroSmart Connect - Smart Agriculture{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section bg-success text-white py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">
-                    <i class="bi bi-tree"></i> AgroSimple
-                </h1>
-                <p class="lead mb-4">
-                    Connect farmers, suppliers, and buyers in one simple platform. 
-                    Empowering agriculture through technology.
-                </p>
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4">
-                        <i class="bi bi-person-plus"></i> Get Started
+
+<!-- =========================================================
+     HERO SECTION
+========================================================= -->
+<section class="agro-hero">
+    <div class="hero-overlay"></div>
+
+    <div class="container position-relative">
+        <div class="row align-items-center hero-row">
+
+            <!-- Hero Text -->
+            <div class="col-lg-7">
+                <div class="hero-content">
+
+                    <div class="hero-badge mb-3 mb-md-4">
+                        <i class="bi bi-stars me-2"></i>
+                        Smart Agriculture Platform
+                    </div>
+
+                    <h1 class="hero-title">
+                        Growing Agriculture,
+                        <span>Connecting Opportunities.</span>
+                    </h1>
+
+                    <p class="hero-description">
+                        AgroSmart connects farmers, suppliers, Extension officers, financial institutions and buyers
+                        through one simple digital platform designed to make
+                        agricultural business easier, faster, and smarter.
+                    </p>
+
+                    <div class="hero-buttons">
+                        <a href="{% url 'register' %}" class="btn btn-hero-primary">
+                            <i class="bi bi-person-plus-fill me-2"></i>
+                            Get Started
+                        </a>
+
+                        <a href="{% url 'login' %}" class="btn btn-hero-outline">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Login
+                        </a>
+                    </div>
+
+                    <div class="hero-trust mt-3 mt-md-4">
+                        <div class="trust-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Easy to use
+                        </div>
+
+                        <div class="trust-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Secure platform
+                        </div>
+
+                        <div class="trust-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Built for agriculture
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Hero Visual -->
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-visual">
+
+                    <div class="floating-card card-one">
+                        <div class="floating-icon">
+                            <i class="bi bi-shop"></i>
+                        </div>
+                        <div>
+                            <strong>Buy &amp; Sell</strong>
+                            <small>Connect with markets</small>
+                        </div>
+                    </div>
+
+                    <div class="main-hero-icon">
+                        <i class="bi bi-flower1"></i>
+                    </div>
+
+                    <div class="floating-card card-two">
+                        <div class="floating-icon">
+                            <i class="bi bi-cloud-sun"></i>
+                        </div>
+                        <div>
+                            <strong>Smart Farming</strong>
+                            <small>Better farming decisions</small>
+                        </div>
+                    </div>
+
+                    <div class="hero-circle circle-one"></div>
+                    <div class="hero-circle circle-two"></div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- =========================================================
+     FEATURES SECTION
+========================================================= -->
+<section class="features-section py-4 py-md-5">
+
+    <div class="container py-3 py-md-4">
+
+        <div class="section-heading text-center mb-4 mb-md-5">
+
+            <span class="section-label">
+                <i class="bi bi-grid-fill me-2"></i>
+                OUR FEATURES
+            </span>
+
+            <h2>
+                Everything You Need to
+                <span>Grow Your Business</span>
+            </h2>
+
+            <p>
+                Simple digital tools designed to connect agricultural
+                communities and create better opportunities.
+            </p>
+
+        </div>
+
+        <div class="row g-3 g-md-4">
+
+            <!-- Feature 1 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+
+                    <div class="feature-icon green">
+                        <i class="bi bi-shop-window"></i>
+                    </div>
+
+                    <h4>Buy &amp; Sell</h4>
+
+                    <p>
+                        Connect directly with farmers, suppliers and buyers.
+                        Discover agricultural products and new business
+                        opportunities in your area.
+                    </p>
+
+                    <a href="{% url 'register' %}" class="feature-link">
+                        Explore platform
+                        <i class="bi bi-arrow-right"></i>
                     </a>
-                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">
-                        <i class="bi bi-box-arrow-in-right"></i> Login
+
+                </div>
+            </div>
+
+
+            <!-- Feature 2 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+
+                    <div class="feature-icon blue">
+                        <i class="bi bi-credit-card-2-front"></i>
+                    </div>
+
+                    <h4>Easy Payments</h4>
+
+                    <p>
+                        Manage agricultural transactions with a simple,
+                        convenient and secure payment experience.
+                    </p>
+
+                    <a href="{% url 'register' %}" class="feature-link">
+                        Start transacting
+                        <i class="bi bi-arrow-right"></i>
                     </a>
+
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <i class="bi bi-plant display-1"></i>
+
+
+            <!-- Feature 3 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+
+                    <div class="feature-icon orange">
+                        <i class="bi bi-cloud-sun-fill"></i>
+                    </div>
+
+                    <h4>Farming Advice</h4>
+
+                    <p>
+                        Access useful farming information, weather updates
+                        and practical advice to support better decisions.
+                    </p>
+
+                    <a href="{% url 'register' %}" class="feature-link">
+                        Learn more
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
             </div>
+
         </div>
+
     </div>
+
 </section>
 
-<!-- Features Section -->
-<section class="py-5">
+
+<!-- =========================================================
+     HOW IT WORKS
+========================================================= -->
+<section class="how-section py-4 py-md-5">
+
+    <div class="container py-3 py-md-4">
+
+        <div class="section-heading text-center mb-4 mb-md-5">
+
+            <span class="section-label">
+                <i class="bi bi-lightning-fill me-2"></i>
+                SIMPLE PROCESS
+            </span>
+
+            <h2>
+                How <span>AgroSmart connect</span> Works
+            </h2>
+
+            <p>
+                Start your agricultural journey in just four simple steps.
+            </p>
+
+        </div>
+
+
+        <div class="row g-3 g-md-4">
+
+            <!-- Step 1 -->
+            <div class="col-6 col-md-3">
+                <div class="process-card">
+
+                    <div class="process-number">
+                        01
+                    </div>
+
+                    <div class="process-icon">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+
+                    <h5>Create Account</h5>
+
+                    <p>
+                        Register as a farmer, supplier or buyer.
+                    </p>
+
+                </div>
+            </div>
+
+
+            <!-- Step 2 -->
+            <div class="col-6 col-md-3">
+                <div class="process-card">
+
+                    <div class="process-number">
+                        02
+                    </div>
+
+                    <div class="process-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <h5>Connect</h5>
+
+                    <p>
+                        Find agricultural partners and products.
+                    </p>
+
+                </div>
+            </div>
+
+
+            <!-- Step 3 -->
+            <div class="col-6 col-md-3">
+                <div class="process-card">
+
+                    <div class="process-number">
+                        03
+                    </div>
+
+                    <div class="process-icon">
+                        <i class="bi bi-cart-check-fill"></i>
+                    </div>
+
+                    <h5>Transact</h5>
+
+                    <p>
+                        Buy, sell and manage your orders easily.
+                    </p>
+
+                </div>
+            </div>
+
+
+            <!-- Step 4 -->
+            <div class="col-6 col-md-3">
+                <div class="process-card">
+
+                    <div class="process-number">
+                        04
+                    </div>
+
+                    <div class="process-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+
+                    <h5>Grow</h5>
+
+                    <p>
+                        Expand your agricultural business.
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     STATS SECTION
+========================================================= -->
+<section class="stats-section py-4 py-md-5">
+
     <div class="container">
-        <h2 class="text-center mb-5">Why AgroSimple?</h2>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-shop display-4 text-success"></i>
-                        <h5 class="card-title mt-3">Buy & Sell</h5>
-                        <p class="card-text text-muted">
-                            Connect directly with farmers, suppliers, and buyers in your area.
-                        </p>
+
+        <div class="stats-wrapper">
+
+            <div class="row g-0">
+
+                <div class="col-6 col-lg-3">
+                    <div class="stat-item">
+                        <i class="bi bi-people-fill"></i>
+                        <h2>100+</h2>
+                        <p>Farmers Registered</p>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-credit-card display-4 text-success"></i>
-                        <h5 class="card-title mt-3">Easy Payments</h5>
-                        <p class="card-text text-muted">
-                            Secure and simple payment processing for all transactions.
-                        </p>
+
+                <div class="col-6 col-lg-3">
+                    <div class="stat-item">
+                        <i class="bi bi-shop"></i>
+                        <h2>50+</h2>
+                        <p>Suppliers</p>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-chat-dots display-4 text-success"></i>
-                        <h5 class="card-title mt-3">Farming Advice</h5>
-                        <p class="card-text text-muted">
-                            Get expert advice and weather updates for better farming.
-                        </p>
+
+                <div class="col-6 col-lg-3">
+                    <div class="stat-item">
+                        <i class="bi bi-box-seam-fill"></i>
+                        <h2>200+</h2>
+                        <p>Products Listed</p>
                     </div>
                 </div>
+
+                <div class="col-6 col-lg-3">
+                    <div class="stat-item">
+                        <i class="bi bi-cart-check-fill"></i>
+                        <h2>500+</h2>
+                        <p>Orders Completed</p>
+                    </div>
+                </div>
+
             </div>
+
         </div>
+
     </div>
+
 </section>
 
-<!-- How It Works -->
-<section class="bg-light py-5">
-    <div class="container">
-        <h2 class="text-center mb-5">How It Works</h2>
-        <div class="row g-4">
-            <div class="col-md-3 text-center">
-                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
-                     style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">
-                    1
+
+<!-- =========================================================
+     CTA SECTION
+========================================================= -->
+<section class="cta-section py-4 py-md-5">
+
+    <div class="container py-3 py-md-4">
+
+        <div class="cta-box">
+
+            <div class="row align-items-center">
+
+                <div class="col-lg-8">
+
+                    <div class="cta-icon">
+                        <i class="bi bi-tree-fill"></i>
+                    </div>
+
+                    <h2>
+                        Ready to Grow With AgroSmart connect?
+                    </h2>
+
+                    <p>
+                        Join farmers, suppliers and buyers who are building
+                        better agricultural businesses through technology.
+                    </p>
+
                 </div>
-                <h6 class="mt-3">Create Account</h6>
-                <p class="text-muted small">Sign up as farmer, supplier, or buyer</p>
-            </div>
-            <div class="col-md-3 text-center">
-                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
-                     style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">
-                    2
+
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+
+                    <a href="{% url 'register' %}" class="btn btn-cta w-100 w-lg-auto">
+                        Create Free Account
+                        <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+
                 </div>
-                <h6 class="mt-3">Connect</h6>
-                <p class="text-muted small">Find partners and products in your area</p>
+
             </div>
-            <div class="col-md-3 text-center">
-                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
-                     style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">
-                    3
-                </div>
-                <h6 class="mt-3">Transact</h6>
-                <p class="text-muted small">Buy, sell, and manage orders easily</p>
-            </div>
-            <div class="col-md-3 text-center">
-                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
-                     style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">
-                    4
-                </div>
-                <h6 class="mt-3">Grow</h6>
-                <p class="text-muted small">Expand your agricultural business</p>
-            </div>
+
         </div>
+
     </div>
+
 </section>
 
-<!-- Stats Section -->
-<section class="py-5 bg-success text-white">
-    <div class="container">
-        <div class="row text-center">
-            <div class="col-md-3">
-                <h2 class="display-4 fw-bold">100+</h2>
-                <p>Farmers Registered</p>
-            </div>
-            <div class="col-md-3">
-                <h2 class="display-4 fw-bold">50+</h2>
-                <p>Suppliers</p>
-            </div>
-            <div class="col-md-3">
-                <h2 class="display-4 fw-bold">200+</h2>
-                <p>Products Listed</p>
-            </div>
-            <div class="col-md-3">
-                <h2 class="display-4 fw-bold">500+</h2>
-                <p>Orders Completed</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Call to Action -->
-<section class="py-5">
-    <div class="container text-center">
-        <h2 class="mb-4">Ready to Get Started?</h2>
-        <p class="lead text-muted mb-4">
-            Join AgroSimple today and be part of the agricultural revolution.
-        </p>
-        <a href="{% url 'register' %}" class="btn btn-success btn-lg px-5">
-            <i class="bi bi-person-plus"></i> Create Free Account
-        </a>
-    </div>
-</section>
 {% endblock %}
 
+
 {% block extra_css %}
+
 <style>
-    .hero-section {
-        background: linear-gradient(135deg, #2d6a4f, #40916c);
-        min-height: 60vh;
-        display: flex;
-        align-items: center;
+
+/* =========================================================
+   HERO - MOBILE FIRST
+========================================================= */
+
+.agro-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 92vh;
+    min-height: 92dvh;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(13, 73, 42, 0.97),
+            rgba(31, 125, 69, 0.94)
+        );
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.hero-row {
+    min-height: 92vh;
+    min-height: 92dvh;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(255,255,255,0.12),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 10% 90%,
+            rgba(255,255,255,0.08),
+            transparent 25%
+        );
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 30px 0 40px;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(10px);
+    font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+.hero-title {
+    font-size: clamp(2rem, 6vw, 4.7rem);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-bottom: 16px;
+}
+
+.hero-title span {
+    display: block;
+    color: #b7f3c7;
+}
+
+.hero-description {
+    max-width: 650px;
+    font-size: clamp(0.95rem, 1.8vw, 1.12rem);
+    line-height: 1.7;
+    color: rgba(255,255,255,0.84);
+    margin-bottom: 24px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-hero-primary,
+.btn-hero-outline {
+    padding: clamp(11px, 2vw, 13px) clamp(18px, 3vw, 25px);
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: clamp(0.85rem, 1.4vw, 1rem);
+    transition: all 0.25s ease;
+    text-align: center;
+    flex: 1 1 auto;
+    min-width: 140px;
+}
+
+.btn-hero-primary {
+    background: #fff;
+    color: #17633a;
+    border: 2px solid #fff;
+}
+
+.btn-hero-primary:hover {
+    background: #eaffef;
+    color: #12532f;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+}
+
+.btn-hero-outline {
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.05);
+}
+
+.btn-hero-outline:hover {
+    background: #fff;
+    color: #17633a;
+    transform: translateY(-3px);
+}
+
+.hero-trust {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.trust-item {
+    font-size: clamp(0.7rem, 1.2vw, 0.82rem);
+    color: rgba(255,255,255,0.75);
+    display: flex;
+    align-items: center;
+}
+
+.trust-item i {
+    color: #9df2b3;
+    margin-right: 5px;
+    font-size: 0.8rem;
+}
+
+
+/* =========================================================
+   HERO VISUAL - DESKTOP ONLY
+========================================================= */
+
+.hero-visual {
+    height: 500px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-hero-icon {
+    width: clamp(180px, 20vw, 270px);
+    height: clamp(180px, 20vw, 270px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(5rem, 10vw, 9rem);
+    color: #b7f3c7;
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow:
+        0 30px 80px rgba(0,0,0,0.15),
+        inset 0 0 50px rgba(255,255,255,0.04);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 3;
+}
+
+.floating-card {
+    position: absolute;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    min-width: 170px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.96);
+    color: #173d29;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+    animation: floating 4s ease-in-out infinite;
+}
+
+.floating-card strong {
+    display: block;
+    font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+}
+
+.floating-card small {
+    display: block;
+    color: #748178;
+    margin-top: 2px;
+    font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+}
+
+.floating-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #e5f7eb;
+    color: #1a7544;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.card-one {
+    top: 60px;
+    left: 0;
+}
+
+.card-two {
+    right: -10px;
+    bottom: 65px;
+    animation-delay: 1s;
+}
+
+@keyframes floating {
+    0%, 100% {
+        transform: translateY(0);
     }
-    
-    .step-number {
-        background: linear-gradient(135deg, #2d6a4f, #40916c);
+    50% {
+        transform: translateY(-10px);
     }
-    
-    .card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.circle-one {
+    width: clamp(250px, 30vw, 370px);
+    height: clamp(250px, 30vw, 370px);
+}
+
+.circle-two {
+    width: clamp(320px, 38vw, 470px);
+    height: clamp(320px, 38vw, 470px);
+}
+
+
+/* =========================================================
+   SECTION HEADINGS
+========================================================= */
+
+.section-heading {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-label {
+    display: inline-block;
+    color: #21874b;
+    font-size: clamp(0.65rem, 1.2vw, 0.75rem);
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+}
+
+.section-heading h2 {
+    font-size: clamp(1.6rem, 4.5vw, 2.8rem);
+    font-weight: 800;
+    color: #183b29;
+    letter-spacing: -1px;
+    line-height: 1.15;
+}
+
+.section-heading h2 span {
+    color: #21874b;
+}
+
+.section-heading p {
+    color: #718078;
+    line-height: 1.7;
+    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+}
+
+
+/* =========================================================
+   FEATURES
+========================================================= */
+
+.features-section {
+    background: #fff;
+}
+
+.feature-card {
+    height: 100%;
+    padding: clamp(22px, 3vw, 35px) clamp(18px, 2.5vw, 30px);
+    border: 1px solid #edf1ee;
+    border-radius: 18px;
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-6px);
+    border-color: transparent;
+    box-shadow: 0 20px 45px rgba(31, 94, 54, 0.1);
+}
+
+.feature-icon {
+    width: clamp(50px, 6vw, 62px);
+    height: clamp(50px, 6vw, 62px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    margin-bottom: 16px;
+}
+
+.feature-icon.green {
+    background: #e6f7eb;
+    color: #1b7b43;
+}
+
+.feature-icon.blue {
+    background: #e8f2ff;
+    color: #2474c9;
+}
+
+.feature-icon.orange {
+    background: #fff2df;
+    color: #d98516;
+}
+
+.feature-card h4 {
+    font-weight: 750;
+    color: #193d29;
+    font-size: clamp(1rem, 1.4vw, 1.2rem);
+    margin-bottom: 10px;
+}
+
+.feature-card p {
+    color: #748078;
+    line-height: 1.7;
+    font-size: clamp(0.85rem, 1vw, 0.95rem);
+    margin-bottom: 18px;
+}
+
+.feature-link {
+    color: #21874b;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: clamp(0.8rem, 1vw, 0.9rem);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.feature-link i {
+    transition: transform 0.2s ease;
+}
+
+.feature-link:hover i {
+    transform: translateX(5px);
+}
+
+
+/* =========================================================
+   HOW IT WORKS
+========================================================= */
+
+.how-section {
+    background: #f5f8f6;
+}
+
+.process-card {
+    text-align: center;
+    position: relative;
+    padding: clamp(10px, 1.5vw, 15px);
+}
+
+.process-number {
+    color: #d7e4da;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: -18px;
+}
+
+.process-icon {
+    position: relative;
+    margin: 0 auto 14px;
+    width: clamp(60px, 8vw, 70px);
+    height: clamp(60px, 8vw, 70px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #21874b;
+    font-size: clamp(1.3rem, 2vw, 1.6rem);
+    box-shadow: 0 10px 30px rgba(26,91,49,0.1);
+    border: 4px solid #edf6ef;
+}
+
+.process-card h5 {
+    color: #193d29;
+    font-weight: 750;
+    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+}
+
+.process-card p {
+    color: #78847d;
+    font-size: clamp(0.75rem, 0.9vw, 0.9rem);
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.stats-section {
+    padding: clamp(40px, 6vw, 70px) 0;
+    background: linear-gradient(
+        135deg,
+        #145c35,
+        #21874b
+    );
+    color: #fff;
+}
+
+.stats-wrapper {
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+.stat-item {
+    text-align: center;
+    padding: clamp(22px, 4vw, 35px) clamp(10px, 2vw, 15px);
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.stat-item:last-child {
+    border-right: none;
+}
+
+.stat-item i {
+    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    color: #b7f3c7;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.stat-item h2 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+.stat-item p {
+    color: rgba(255,255,255,0.7);
+    margin: 0;
+    font-size: clamp(0.7rem, 1vw, 0.88rem);
+}
+
+
+/* =========================================================
+   CTA
+========================================================= */
+
+.cta-section {
+    background: #fff;
+}
+
+.cta-box {
+    padding: clamp(25px, 4vw, 50px);
+    border-radius: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            #eaf8ee,
+            #f5fbf7
+        );
+    border: 1px solid #dcefe1;
+}
+
+.cta-icon {
+    width: clamp(44px, 5vw, 52px);
+    height: clamp(44px, 5vw, 52px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #d8f1df;
+    color: #1c7842;
+    font-size: clamp(1.2rem, 1.8vw, 1.4rem);
+    margin-bottom: 14px;
+}
+
+.cta-box h2 {
+    color: #173c28;
+    font-weight: 800;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    margin-bottom: 8px;
+    line-height: 1.15;
+}
+
+.cta-box p {
+    color: #6d7b73;
+    max-width: 650px;
+    margin: 0;
+    line-height: 1.7;
+    font-size: clamp(0.85rem, 1vw, 1rem);
+}
+
+.btn-cta {
+    padding: clamp(12px, 1.8vw, 14px) clamp(20px, 3vw, 25px);
+    border-radius: 12px;
+    background: #1c7842;
+    color: #fff;
+    font-weight: 700;
+    font-size: clamp(0.85rem, 1.2vw, 1rem);
+    border: none;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-cta:hover {
+    background: #145c35;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(28,120,66,0.2);
+}
+
+
+/* =========================================================
+   RESPONSIVE - SIMU NDOGO
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .hero-content {
+        padding: 20px 0 30px;
     }
-    
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+
+    .hero-title {
+        font-size: 2rem;
+        letter-spacing: -0.5px;
     }
-    
-    .display-1 {
-        font-size: 6rem;
+
+    .hero-description {
+        font-size: 0.9rem;
+        line-height: 1.6;
     }
-    
-    @media (max-width: 768px) {
-        .hero-section {
-            min-height: 40vh;
-            text-align: center;
-        }
-        .display-1 {
-            font-size: 4rem;
-        }
+
+    .hero-buttons {
+        flex-direction: column;
     }
+
+    .btn-hero-primary,
+    .btn-hero-outline {
+        width: 100%;
+        min-width: unset;
+        font-size: 0.9rem;
+        padding: 14px 20px;
+    }
+
+    .hero-trust {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .trust-item {
+        font-size: 0.8rem;
+    }
+
+    .feature-card {
+        padding: 20px 16px;
+        border-radius: 14px;
+    }
+
+    .feature-card h4 {
+        font-size: 1rem;
+    }
+
+    .feature-card p {
+        font-size: 0.85rem;
+    }
+
+    .process-card {
+        padding: 8px;
+    }
+
+    .process-number {
+        font-size: 1.8rem;
+    }
+
+    .process-icon {
+        width: 52px;
+        height: 52px;
+        font-size: 1.1rem;
+        border-width: 3px;
+        margin-bottom: 10px;
+    }
+
+    .process-card h5 {
+        font-size: 0.8rem;
+    }
+
+    .process-card p {
+        font-size: 0.7rem;
+    }
+
+    .stat-item {
+        padding: 16px 8px;
+    }
+
+    .stat-item h2 {
+        font-size: 1.4rem;
+    }
+
+    .stat-item p {
+        font-size: 0.65rem;
+    }
+
+    .cta-box {
+        padding: 20px 16px;
+        border-radius: 16px;
+    }
+
+    .cta-box h2 {
+        font-size: 1.2rem;
+    }
+
+    .cta-box p {
+        font-size: 0.85rem;
+    }
+
+    .btn-cta {
+        width: 100%;
+        font-size: 0.9rem;
+        padding: 14px 20px;
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - SIMU ZA KATI (576px - 768px)
+========================================================= */
+
+@media (min-width: 576px) and (max-width: 768px) {
+
+    .hero-content {
+        padding: 25px 0 35px;
+    }
+
+    .hero-title {
+        font-size: 2.6rem;
+    }
+
+    .btn-hero-primary,
+    .btn-hero-outline {
+        min-width: 160px;
+    }
+
+    .process-card {
+        padding: 10px;
+    }
+
+    .process-icon {
+        width: 58px;
+        height: 58px;
+        font-size: 1.3rem;
+    }
+
+    .stat-item {
+        padding: 20px 12px;
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLE (768px - 992px)
+========================================================= */
+
+@media (min-width: 768px) and (max-width: 992px) {
+
+    .hero-content {
+        padding: 40px 0 50px;
+    }
+
+    .hero-title {
+        font-size: 3.2rem;
+    }
+
+    .stat-item {
+        padding: 28px 15px;
+    }
+
+    .stat-item:nth-child(2) {
+        border-right: none;
+    }
+
+    .cta-box {
+        padding: 35px 30px;
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - DESKTOP KUBWA (992px+)
+========================================================= */
+
+@media (min-width: 992px) {
+
+    .hero-content {
+        padding: 70px 0 80px;
+    }
+
+    .stat-item {
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stat-item:nth-child(4) {
+        border-right: none;
+    }
+
+    .btn-hero-primary,
+    .btn-hero-outline {
+        min-width: 180px;
+    }
+
+}
+
+
+/* =========================================================
+   ACCESSIBILITY - REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .floating-card {
+        animation: none !important;
+    }
+
+    .feature-card {
+        transition: none !important;
+    }
+
+    .feature-card:hover {
+        transform: none !important;
+    }
+
+    .btn-hero-primary:hover,
+    .btn-hero-outline:hover,
+    .btn-cta:hover {
+        transform: none !important;
+    }
+
+    .feature-link:hover i {
+        transform: none !important;
+    }
+
+}
 </style>
+
 {% endblock %}

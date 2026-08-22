@@ -3,49 +3,273 @@
 {% block title %}{{ action }} Buying Request - Buyer{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
+<div class="buyer-request-form">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Header -->
+                <div class="mb-4">
+                    <h2 class="fw-bold mb-1">
                         <i class="bi bi-file-earmark-plus text-success me-2"></i>
                         {{ action }} Buying Request
-                    </h5>
+                    </h2>
+                    <p class="text-muted">
+                        {% if action == 'Create' %}
+                            Let farmers know what crops you want to buy
+                        {% else %}
+                            Update your buying request details
+                        {% endif %}
+                    </p>
+                    <hr>
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        {% for field in form %}
-                            <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">
-                                    {{ field.label }}
-                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
-                                </label>
-                                {{ field }}
-                                {% if field.errors %}
-                                    <div class="text-danger small mt-1">{{ field.errors }}</div>
-                                {% endif %}
-                                {% if field.help_text %}
-                                    <div class="text-muted small">{{ field.help_text }}</div>
-                                {% endif %}
+
+                <!-- Form Card -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-info-circle text-success me-2"></i>
+                            Request Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" data-loading="true" 
+                              data-loading-title="{% if action == 'Create' %}Creating Request{% else %}Updating Request{% endif %}"
+                              data-loading-message="Please wait...">
+                            {% csrf_token %}
+
+                            {% for field in form %}
+                                <div class="mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in field.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+
+                            <div class="d-flex flex-wrap gap-2 mt-4 pt-2 border-top">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    {% if action == 'Create' %}Create Request{% else %}Update Request{% endif %}
+                                </button>
+                                <a href="{% url 'buyer_requests' %}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel
+                                </a>
                             </div>
-                        {% endfor %}
-                        
-                        <div class="d-flex gap-2 mt-3">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle me-1"></i>
-                                {% if action == 'Create' %}Create Request{% else %}Update Request{% endif %}
-                            </button>
-                            <a href="{% url 'buyer_requests' %}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-1"></i> Cancel
-                            </a>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
+
+                <!-- Help Card -->
+                <div class="card shadow-sm border-0 mt-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-lightbulb text-warning fs-4 me-3"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Tips for a good buying request</h6>
+                                <ul class="text-muted small mb-0 ps-3">
+                                    <li>Be specific about the crop variety you want</li>
+                                    <li>Offer a competitive price to attract more farmers</li>
+                                    <li>Set a realistic expiry date</li>
+                                    <li>Include your location for nearby farmers</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   BUYER REQUEST FORM - SAME STYLE AS SUPPLIER
+============================================================ */
+
+.buyer-request-form {
+    min-height: calc(100vh - 76px);
+    padding: 20px 0 55px;
+    background: #f5f8f6;
+}
+
+.buyer-request-form .card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+}
+
+.buyer-request-form .card:hover {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.buyer-request-form .card-header {
+    background: transparent;
+    border-bottom: 1px solid #edf0ee;
+    padding: 1.1rem 1.5rem;
+}
+
+.buyer-request-form .card-body {
+    padding: 1.5rem;
+}
+
+.buyer-request-form h2 {
+    color: #183b29;
+    font-size: 1.8rem;
+    letter-spacing: -0.5px;
+}
+
+.buyer-request-form hr {
+    border-color: #e7ece8;
+    opacity: 1;
+}
+
+/* Form Controls */
+.buyer-request-form .form-control,
+.buyer-request-form .form-select {
+    border-radius: 10px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 400;
+    transition: all 0.2s ease;
+    background: #fff;
+    color: #1c3326;
+}
+
+.buyer-request-form .form-control:focus,
+.buyer-request-form .form-select:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45, 143, 78, 0.15);
+    outline: none;
+}
+
+.buyer-request-form .form-control.is-invalid,
+.buyer-request-form .form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+.buyer-request-form .form-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #1c3326;
+    margin-bottom: 0.4rem;
+}
+
+.buyer-request-form .form-text {
+    color: #8a9a92;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+/* Buttons */
+.buyer-request-form .btn {
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.4rem;
+    transition: all 0.2s ease;
+}
+
+.buyer-request-form .btn-success {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.buyer-request-form .btn-success:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26, 110, 62, 0.35);
+}
+
+.buyer-request-form .btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.buyer-request-form .btn-secondary:hover {
+    background: #dce1dd;
+    color: #1c3326;
+}
+
+/* Help Card */
+.buyer-request-form .card .card-body ul {
+    list-style-type: disc;
+}
+
+.buyer-request-form .card .card-body ul li {
+    margin-bottom: 2px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .buyer-request-form {
+        padding: 15px 0 35px;
+    }
+
+    .buyer-request-form h2 {
+        font-size: 1.4rem;
+    }
+
+    .buyer-request-form .card-header {
+        padding: 0.9rem 1.2rem;
+    }
+
+    .buyer-request-form .card-body {
+        padding: 1.2rem;
+    }
+
+    .buyer-request-form .form-control,
+    .buyer-request-form .form-select {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.7rem;
+    }
+
+    .buyer-request-form .btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 1.1rem;
+        flex: 1;
+    }
+}
+
+@media (max-width: 576px) {
+    .buyer-request-form .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .buyer-request-form .card-body {
+        padding: 1rem;
+    }
+
+    .buyer-request-form h2 {
+        font-size: 1.2rem;
+    }
+
+    .buyer-request-form .d-flex.flex-wrap.gap-2 {
+        flex-direction: column;
+    }
+
+    .buyer-request-form .d-flex.flex-wrap.gap-2 .btn {
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}

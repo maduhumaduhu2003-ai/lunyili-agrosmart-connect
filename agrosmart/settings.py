@@ -194,6 +194,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ---------------------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = env("TIME_ZONE", default="Africa/Dar_es_Salaam")
+USSD_SESSION_TIMEOUT = env.int("USSD_SESSION_TIMEOUT", default=600)
 USE_I18N = True
 USE_TZ = True
 
@@ -256,25 +257,75 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default=f"{SYSTEM_NAME} <no-reply
 # ---------------------------------------------------------------------------
 # External integrations (Africa's Talking, ClickPesa, OpenWeather)
 # ---------------------------------------------------------------------------
+# ==========================================
+# AFRICA'S TALKING - USSD SANDBOX
+# ==========================================
 AT_USERNAME = env("AT_USERNAME", default="sandbox")
 AT_API_KEY = env("AT_API_KEY", default="")
-AT_SENDER_ID = env("AT_SENDER_ID", default="agrosmart")
+AT_SHORT_CODE = env("AT_SHORT_CODE", default="")
+
+
+# ==========================================
+# AFRICA'S TALKING - SMS LIVE
+# ==========================================
+AT_SMS_USERNAME = env("AT_SMS_USERNAME", default="")
+AT_SMS_API_KEY = env("AT_SMS_API_KEY", default="")
+AT_SMS_SENDER_ID = env("AT_SMS_SENDER_ID", default="")
 AT_SMS_CALLBACK_URL = env("AT_SMS_CALLBACK_URL", default="")
-AT_SMS_DRY_RUN = env.bool("AT_SMS_DRY_RUN", default=not bool(AT_API_KEY))
-AT_SHORT_CODE = env("AT_SHORT_CODE", default="*384*20997#")
+AT_SMS_DRY_RUN = env.bool("AT_SMS_DRY_RUN", default=False)
 
-CLICKPESA_CLIENT_ID = env("CLICKPESA_CLIENT_ID", default="")
-CLICKPESA_API_KEY = env("CLICKPESA_API_KEY", default="")
-CLICKPESA_BASE_URL = env("CLICKPESA_BASE_URL", default="https://api.clickpesa.com")
-CLICKPESA_WEBHOOK_SECRET = env("CLICKPESA_WEBHOOK_SECRET", default="")
-CLICKPESA_DRY_RUN = env.bool("CLICKPESA_DRY_RUN", default=not bool(CLICKPESA_API_KEY))
 
+# settings.py - Add to existing settings
+
+# ---------------------------------------------------------------------------
+# Payment Provider Configuration
+# ---------------------------------------------------------------------------
+
+# Payment Provider (clickpesa, unconfigured)
+PAYMENT_PROVIDER = env('PAYMENT_PROVIDER', default='unconfigured')
+
+# ClickPesa Configuration
+CLICKPESA_CLIENT_ID = env('CLICKPESA_CLIENT_ID', default='')
+CLICKPESA_API_KEY = env('CLICKPESA_API_KEY', default='')
+CLICKPESA_BASE_URL = env('CLICKPESA_BASE_URL', default='https://api.clickpesa.com')
+CLICKPESA_WEBHOOK_SECRET = env('CLICKPESA_WEBHOOK_SECRET', default='')
+CLICKPESA_DRY_RUN = env.bool('CLICKPESA_DRY_RUN', default=True)
+
+# ============================================
+# WEATHER API SETTINGS 
+# ============================================
+
+# Weather Provider (openweather, weatherapi, tomorrow, accuweather)
+WEATHER_PROVIDER = env("WEATHER_PROVIDER", default="openweather")
+
+# OpenWeather
 OPENWEATHER_API_KEY = env("OPENWEATHER_API_KEY", default="")
 OPENWEATHER_BASE_URL = env("OPENWEATHER_BASE_URL", default="https://api.openweathermap.org/data/2.5")
+
+# WeatherAPI.com (Alternative)
+WEATHERAPI_API_KEY = env("WEATHERAPI_API_KEY", default="")
+WEATHERAPI_BASE_URL = env("WEATHERAPI_BASE_URL", default="https://api.weatherapi.com/v1")
+
+# Tomorrow.io (Alternative)
+TOMORROW_API_KEY = env("TOMORROW_API_KEY", default="")
+TOMORROW_BASE_URL = env("TOMORROW_BASE_URL", default="https://api.tomorrow.io/v4")
+
+# AccuWeather (Alternative)
+ACCUWEATHER_API_KEY = env("ACCUWEATHER_API_KEY", default="")
+ACCUWEATHER_BASE_URL = env("ACCUWEATHER_BASE_URL", default="http://dataservice.accuweather.com")
+
+# Weather Settings
+WEATHER_UNITS = env("WEATHER_UNITS", default="metric")  # metric or imperial
+WEATHER_LANGUAGE = env("WEATHER_LANGUAGE", default="sw")  # sw or en
+WEATHER_CACHE_TIMEOUT = env.int("WEATHER_CACHE_TIMEOUT", default=1800)  # 30 minutes
 
 # USSD Settings
 USSD_DEFAULT_LANGUAGE = env("USSD_DEFAULT_LANGUAGE", default="sw")
 DEFAULT_FARMER_COUNTRY = env("DEFAULT_FARMER_COUNTRY", default="TZ")
+
+# GPS/Location Settings
+ENABLE_GPS = env.bool("ENABLE_GPS", default=True)
+LOCATION_CACHE_TIMEOUT = env.int("LOCATION_CACHE_TIMEOUT", default=86400)  # 24 hours
 
 # ---------------------------------------------------------------------------
 # Security hardening (production)

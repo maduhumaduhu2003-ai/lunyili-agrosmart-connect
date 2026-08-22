@@ -3,95 +3,564 @@
 {% block title %}Farmers - Extension Officer{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1"><i class="bi bi-people text-success me-2"></i>Farmers</h2>
-                    <p class="text-muted">View farmers in your region</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Search -->
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <form method="get" class="d-flex">
-                <input type="text" name="search" class="form-control me-2" placeholder="Search farmers..." value="{{ search }}">
-                <button type="submit" class="btn btn-outline-primary">
+<div class="extension-farmers-list">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+        <!-- =========================================================
+             HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header">
+
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Farmers
+                </div>
+
+                <h1 class="dashboard-title">
+                    Farmers in Your Region
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-people me-1"></i>
+                    View and manage farmers in your coverage area
+                </p>
+            </div>
+
+        </div>
+
+        <!-- =========================================================
+             SEARCH
+        ========================================================== -->
+
+        <div class="search-bar mb-4">
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Search farmers by name, phone, village..." 
+                       value="{{ search }}">
+                <button type="submit" class="btn btn-primary">
                     <i class="bi bi-search"></i> Search
                 </button>
+                {% if search %}
+                    <a href="{% url 'extension_farmers' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Clear
+                    </a>
+                {% endif %}
             </form>
         </div>
-    </div>
 
-    <!-- Farmers Table -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-            {% if farmers %}
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Location</th>
-                                <th>Primary Crop</th>
-                                <th>Registered</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for farmer in farmers %}
+        <!-- =========================================================
+             TABLE
+        ========================================================== -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">
+                        <span class="panel-title-icon">
+                            <i class="bi bi-people"></i>
+                        </span>
+                        All Farmers
+                    </div>
+                    <p class="panel-subtitle">
+                        {% if farmers %}
+                            Showing {{ farmers|length }} farmers
+                        {% else %}
+                            No farmers found
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-body">
+
+                {% if farmers %}
+
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
-                                    <td><span class="fw-bold">{{ farmer.full_name }}</span></td>
-                                    <td>{{ farmer.phone_number }}</td>
-                                    <td>{{ farmer.village }}{% if farmer.district %}, {{ farmer.district }}{% endif %}</td>
-                                    <td>{{ farmer.primary_crop|default:"-" }}</td>
-                                    <td>{{ farmer.created_at|date:"d M Y" }}</td>
-                                    <td>
-                                        <a href="{% url 'extension_farmer_detail' farmer.id %}" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Location</th>
+                                    <th>Primary Crop</th>
+                                    <th>Registered</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {% for farmer in farmers %}
+                                    <tr>
+                                        <td>
+                                            <span class="farmer-name">{{ farmer.full_name }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="tel:{{ farmer.phone_number }}" class="phone-link">
+                                                <i class="bi bi-telephone me-1"></i>
+                                                {{ farmer.phone_number }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="location-text">
+                                                <i class="bi bi-geo-alt me-1"></i>
+                                                {% if farmer.village %}{{ farmer.village }}{% endif %}
+                                                {% if farmer.district %}, {{ farmer.district }}{% endif %}
+                                                {% if not farmer.village and not farmer.district %}Not set{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ farmer.primary_crop|default:"-" }}
+                                        </td>
+                                        <td>
+                                            <span class="date-text">{{ farmer.created_at|date:"d M Y" }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'extension_farmer_detail' farmer.id %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="tel:{{ farmer.phone_number }}" 
+                                                   class="btn btn-sm btn-outline-success" title="Call">
+                                                    <i class="bi bi-telephone"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Pagination -->
-                {% if farmers.has_other_pages %}
-                    <nav class="mt-3">
-                        <ul class="pagination justify-content-center">
-                            {% if farmers.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ farmers.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">Previous</a>
-                                </li>
+                    <!-- Pagination -->
+                    {% if farmers.has_other_pages %}
+                        <div class="pagination-wrapper">
+                            <nav>
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if farmers.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ farmers.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                                                <i class="bi bi-chevron-left"></i> Previous
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in farmers.paginator.page_range %}
+                                        <li class="page-item {% if farmers.number == num %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+
+                                    {% if farmers.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ farmers.next_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                                                Next <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+
+                {% else %}
+
+                    <!-- Empty State -->
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h5>No farmers found</h5>
+                        <p>
+                            {% if search %}
+                                No farmers match your search "{{ search }}".
+                            {% else %}
+                                Farmers in your region will appear here.
                             {% endif %}
-                            {% for num in farmers.paginator.page_range %}
-                                <li class="page-item {% if farmers.number == num %}active{% endif %}">
-                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
-                                </li>
-                            {% endfor %}
-                            {% if farmers.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ farmers.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
+                        </p>
+                        {% if search %}
+                            <a href="{% url 'extension_farmers' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Clear Search
+                            </a>
+                        {% endif %}
+                    </div>
+
                 {% endif %}
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-people display-1 text-muted d-block mb-3"></i>
-                    <h5 class="text-muted">No farmers found</h5>
-                    <p class="text-muted small">Farmers in your region will appear here.</p>
-                </div>
-            {% endif %}
+
+            </div>
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.extension-farmers-list {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-subtitle i {
+    color: #21874b;
+}
+
+/* Search Bar */
+.search-bar .form-control {
+    border-radius: 10px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    max-width: 400px;
+}
+
+.search-bar .form-control:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.12);
+}
+
+.search-bar .btn-primary {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.search-bar .btn-primary:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+    transform: translateY(-1px);
+}
+
+/* Panel */
+.dashboard-panel {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 19px 21px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #1c3326;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.panel-title-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: #21874b;
+    background: #e9f6ed;
+    font-size: .82rem;
+}
+
+.panel-subtitle {
+    margin: 4px 0 0 41px;
+    color: #9aa39e;
+    font-size: .68rem;
+}
+
+.panel-body {
+    padding: 0;
+}
+
+/* Table */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+.data-table th {
+    padding: 12px 18px;
+    color: #8a948e;
+    background: #fafcfb;
+    border-bottom: 1px solid #edf0ee;
+    font-size: .65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.data-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f2f1;
+    color: #526159;
+    font-size: .74rem;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fcfa;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.farmer-name {
+    font-weight: 700;
+    color: #1a6e3e;
+}
+
+.phone-link {
+    color: #2869d6;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.phone-link:hover {
+    color: #1a6e3e;
+}
+
+.phone-link i {
+    font-size: 0.7rem;
+}
+
+.location-text {
+    color: #6c7a72;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.location-text i {
+    color: #21874b;
+    font-size: 0.7rem;
+}
+
+.date-text {
+    color: #8b958f;
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.action-buttons .btn {
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-width: 1.5px;
+}
+
+.action-buttons .btn-outline-primary:hover {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.action-buttons .btn-outline-success:hover {
+    background: #28a745;
+    color: #fff;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    padding: 16px 21px;
+    border-top: 1px solid #edf0ee;
+}
+
+.pagination {
+    gap: 3px;
+}
+
+.pagination .page-link {
+    border: 1.5px solid #dee2e6;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6c7a72;
+    background: #fff;
+}
+
+.pagination .page-link:hover {
+    background: #f0f7f0;
+    border-color: #2d8f4e;
+    color: #1a6e3e;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border-color: #1a6e3e;
+    color: #fff;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 65px 25px;
+}
+
+.empty-icon {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    border-radius: 18px;
+    color: #8d9991;
+    background: #f1f4f2;
+    font-size: 1.8rem;
+}
+
+.empty-state h5 {
+    color: #4d5d54;
+    font-size: .95rem;
+    font-weight: 800;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    color: #9aa39e;
+    font-size: .76rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .extension-farmers-list {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+        margin-bottom: 22px;
+    }
+
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .search-bar .form-control {
+        max-width: 100%;
+    }
+
+    .panel-header {
+        padding: 15px;
+    }
+
+    .panel-subtitle {
+        margin-left: 0;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.68rem;
+    }
+
+    .action-buttons .btn {
+        padding: 3px 6px;
+        font-size: 0.65rem;
+    }
+
+    .empty-state {
+        padding: 40px 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .data-table {
+        min-width: 600px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+        font-size: 0.65rem;
+    }
+
+    .action-buttons {
+        gap: 2px;
+    }
+
+    .action-buttons .btn {
+        padding: 2px 5px;
+        font-size: 0.6rem;
+    }
+}
+</style>
 {% endblock %}

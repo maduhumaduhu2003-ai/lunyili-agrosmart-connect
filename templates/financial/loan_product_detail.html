@@ -1,0 +1,644 @@
+<!-- templates/financial/loan_product_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Product Detail - Financial Institution{% endblock %}
+
+{% block content %}
+
+<div class="financial-product-detail">
+
+    <div class="container-fluid px-3 px-lg-4 py-4">
+
+        <!-- Header -->
+        <div class="dashboard-header-compact mb-4">
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Loan Product
+                </div>
+                <h1 class="dashboard-title">
+                    {{ product.name }}
+                </h1>
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-building me-1"></i>
+                    {{ product.institution.institution_name }}
+                    <span class="separator">|</span>
+                    <span class="status-badge-small {% if product.is_active %}active{% else %}inactive{% endif %}">
+                        {% if product.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'financial_loan_products' %}" class="dashboard-action secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <a href="{% url 'financial_loan_product_edit' product.id %}" class="dashboard-action primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- =========================================================
+                 LEFT COLUMN - Product Info
+            ========================================================== -->
+            <div class="col-lg-4">
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-info-circle text-success me-2"></i>Product Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">Name</span>
+                            <span class="info-value">{{ product.name }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Type</span>
+                            <span class="info-value">
+                                <span class="type-badge {{ product.loan_type|lower }}">
+                                    {{ product.get_loan_type_display }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Interest Rate</span>
+                            <span class="info-value">{{ product.interest_rate }}%</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Min Amount</span>
+                            <span class="info-value">TSh {{ product.min_amount|floatformat:0 }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Max Amount</span>
+                            <span class="info-value">TSh {{ product.max_amount|floatformat:0 }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Duration</span>
+                            <span class="info-value">{{ product.duration_months }} months</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Repayment Frequency</span>
+                            <span class="info-value">{{ product.get_repayment_frequency_display }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Grace Period</span>
+                            <span class="info-value">{{ product.grace_period_days }} days</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Min Credit Score</span>
+                            <span class="info-value">{{ product.minimum_credit_score }}/100</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Institution</span>
+                            <span class="info-value">{{ product.institution.institution_name }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Created</span>
+                            <span class="info-value">{{ product.created_at|date:"d M Y" }}</span>
+                        </div>
+                        {% if product.description %}
+                            <div class="info-row description">
+                                <span class="info-label">Description</span>
+                                <span class="info-value">{{ product.description }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- =========================================================
+                 RIGHT COLUMN - Stats & Applications
+            ========================================================== -->
+            <div class="col-lg-8">
+
+                <!-- Stats Grid -->
+                <div class="stats-grid-small mb-4">
+                    <div class="stat-card-small">
+                        <span class="stat-label-small">Total Applications</span>
+                        <span class="stat-value-small">{{ total_applications|default:0 }}</span>
+                    </div>
+                    <div class="stat-card-small">
+                        <span class="stat-label-small">Approved</span>
+                        <span class="stat-value-small success">{{ approved|default:0 }}</span>
+                    </div>
+                    <div class="stat-card-small">
+                        <span class="stat-label-small">Disbursed</span>
+                        <span class="stat-value-small info">{{ disbursed|default:0 }}</span>
+                    </div>
+                    <div class="stat-card-small">
+                        <span class="stat-label-small">Rejected</span>
+                        <span class="stat-value-small danger">{{ rejected|default:0 }}</span>
+                    </div>
+                    <div class="stat-card-small">
+                        <span class="stat-label-small">Repaid</span>
+                        <span class="stat-value-small success">{{ repaid|default:0 }}</span>
+                    </div>
+                    <div class="stat-card-small">
+                        <span class="stat-label-small">Defaulted</span>
+                        <span class="stat-value-small danger">{{ defaulted|default:0 }}</span>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="metrics-grid mb-4">
+                    <div class="metric-card">
+                        <span class="metric-label">Approval Rate</span>
+                        <span class="metric-value">{{ approval_rate|default:0 }}%</span>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" style="width: {{ approval_rate|default:0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Repayment Rate</span>
+                        <span class="metric-value">{{ repayment_rate|default:0 }}%</span>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" style="width: {{ repayment_rate|default:0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Default Rate</span>
+                        <span class="metric-value">{{ default_rate|default:0 }}%</span>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill danger" style="width: {{ default_rate|default:0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Summary -->
+                <div class="financial-summary mb-4">
+                    <div class="summary-item">
+                        <span class="summary-label">Total Disbursed</span>
+                        <span class="summary-value">TSh {{ total_disbursed|floatformat:0|default:"0" }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Recovered</span>
+                        <span class="summary-value">TSh {{ total_recovered|floatformat:0|default:"0" }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Net Portfolio</span>
+                        <span class="summary-value">TSh {{ total_disbursed|add:total_recovered|floatformat:0|default:"0" }}</span>
+                    </div>
+                </div>
+
+                <!-- Recent Applications -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-list-ul text-success me-2"></i>Recent Applications
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_applications %}
+                            <div class="table-wrapper-small">
+                                <table class="app-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Farmer</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for app in recent_applications %}
+                                            <tr>
+                                                <td>{{ app.farmer.full_name }}</td>
+                                                <td>TSh {{ app.amount|floatformat:0 }}</td>
+                                                <td>
+                                                    <span class="status-badge-small {{ app.status|lower }}">
+                                                        {{ app.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ app.created_at|date:"d M Y" }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">No applications yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   FINANCIAL PRODUCT DETAIL - COMPLETE STYLES
+============================================================ */
+
+.financial-product-detail {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Header */
+.dashboard-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-top: 20px;
+}
+
+.dashboard-header-compact .welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.dashboard-header-compact .welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-header-compact .dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-header-compact .dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-header-compact .dashboard-subtitle .separator {
+    margin: 0 8px;
+    color: #dee2e6;
+}
+
+.dashboard-header-compact .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.dashboard-header-compact .dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.dashboard-header-compact .dashboard-action.secondary {
+    color: #315dcb;
+    border: 1px solid #d9e1f5;
+    background: #fff;
+}
+
+.dashboard-header-compact .dashboard-action.primary {
+    color: #fff;
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    box-shadow: 0 4px 12px rgba(26,110,62,.15);
+}
+
+.dashboard-header-compact .dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid #edf0ee;
+    padding: 1.1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Info Rows */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f2f1;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row.description {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.info-label {
+    color: #8a948e;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.info-value {
+    color: #1c3326;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: right;
+}
+
+.info-row.description .info-value {
+    text-align: left;
+    font-weight: 400;
+}
+
+.status-badge-small {
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.status-badge-small.active { color: #177a43; background: #e7f6ec; }
+.status-badge-small.inactive { color: #66716b; background: #f0f2f1; }
+
+.type-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.type-badge.input { color: #177a43; background: #e7f6ec; }
+.type-badge.production { color: #2869d6; background: #edf3ff; }
+.type-badge.market { color: #a96d00; background: #fff5dc; }
+.type-badge.general { color: #6c7a72; background: #f0f2f1; }
+
+/* Stats Grid Small */
+.stats-grid-small {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+}
+
+.stat-card-small {
+    text-align: center;
+    padding: 14px 10px;
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(27,67,43,.04);
+}
+
+.stat-label-small {
+    display: block;
+    font-size: 0.55rem;
+    color: #8a948e;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.stat-value-small {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1c3326;
+}
+
+.stat-value-small.success { color: #177a43; }
+.stat-value-small.info { color: #087e9d; }
+.stat-value-small.danger { color: #b32121; }
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.metric-card {
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(27,67,43,.04);
+}
+
+.metric-label {
+    display: block;
+    font-size: 0.65rem;
+    color: #8a948e;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.metric-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1c3326;
+    margin: 4px 0 8px;
+}
+
+.metric-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: #f0f2f1;
+    overflow: hidden;
+}
+
+.metric-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #1a6e3e, #2d8f4e);
+    transition: width 0.6s ease;
+}
+
+.metric-bar-fill.danger {
+    background: linear-gradient(90deg, #dc3545, #b32121);
+}
+
+/* Financial Summary */
+.financial-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.summary-item {
+    text-align: center;
+    padding: 14px;
+    background: #f8fbf9;
+    border-radius: 12px;
+}
+
+.summary-label {
+    display: block;
+    font-size: 0.6rem;
+    color: #8a948e;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.summary-value {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1c3326;
+}
+
+/* Application Table */
+.table-wrapper-small {
+    overflow-x: auto;
+}
+
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+}
+
+.app-table th {
+    padding: 8px 10px;
+    color: #8a948e;
+    font-weight: 700;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.app-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f2f1;
+    color: #526159;
+}
+
+.app-table tr:last-child td {
+    border-bottom: none;
+}
+
+.status-badge-small {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+.status-badge-small.pending { color: #a96d00; background: #fff5dc; }
+.status-badge-small.approved { color: #177a43; background: #e7f6ec; }
+.status-badge-small.disbursed { color: #087e9d; background: #e3f7fc; }
+.status-badge-small.rejected { color: #b32121; background: #fde8e8; }
+.status-badge-small.repaid { color: #177a43; background: #e7f6ec; }
+.status-badge-small.defaulted { color: #b32121; background: #fde8e8; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .stats-grid-small {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .financial-product-detail {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header-compact {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .dashboard-header-compact .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .dashboard-header-compact .header-actions {
+        width: 100%;
+    }
+
+    .dashboard-header-compact .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+    }
+    .info-value {
+        text-align: left;
+    }
+
+    .stats-grid-small {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .stat-value-small {
+        font-size: 1.1rem;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    .financial-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-header-compact .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .stats-grid-small {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .stat-card-small {
+        padding: 10px;
+    }
+    .stat-value-small {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

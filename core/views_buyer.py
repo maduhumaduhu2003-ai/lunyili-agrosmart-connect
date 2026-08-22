@@ -14,7 +14,8 @@ from .forms import BuyerProfileForm, BuyingRequestForm
 
 @login_required
 def buyer_profile_create(request):
-    """Create buyer profile"""
+    """Create buyer profile - auto-fill phone and email from User"""
+    
     if Buyer.objects.filter(user=request.user).exists():
         messages.info(request, "You already have a buyer profile.")
         return redirect('buyer_dashboard')
@@ -24,6 +25,11 @@ def buyer_profile_create(request):
         if form.is_valid():
             buyer = form.save(commit=False)
             buyer.user = request.user
+            
+            # ✅ Auto-fill phone and email from User model
+            buyer.phone = request.user.phone or ''
+            buyer.email = request.user.email or ''
+            
             buyer.save()
             messages.success(request, "Buyer profile created successfully!")
             return redirect('buyer_dashboard')
@@ -31,8 +37,12 @@ def buyer_profile_create(request):
             messages.error(request, "Please correct the errors below.")
     else:
         form = BuyerProfileForm()
-    
-    return render(request, 'buyer/profile_create.html', {'form': form})
+
+    context = {
+        'form': form,
+        'user': request.user,
+    }
+    return render(request, 'buyer/profile_create.html', context)
 
 
 @login_required

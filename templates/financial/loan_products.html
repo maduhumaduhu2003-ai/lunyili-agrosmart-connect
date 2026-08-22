@@ -1,114 +1,798 @@
+<!-- templates/financial/loan_products.html -->
 {% extends 'base.html' %}
 
 {% block title %}Loan Products - Financial Institution{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1"><i class="bi bi-boxes text-success me-2"></i>Loan Products</h2>
-                    <p class="text-muted">Manage your loan products</p>
+
+<div class="financial-products">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+        <!-- =========================================================
+             HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header">
+
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Loan Products
                 </div>
-                <a href="{% url 'financial_loan_product_create' %}" class="btn btn-success">
-                    <i class="bi bi-plus-circle me-1"></i> Add Loan Product
+                <h1 class="dashboard-title">
+                    Loan Products
+                </h1>
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-boxes me-1"></i>
+                    Manage your loan products
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a href="{% url 'financial_loan_product_create' %}" class="dashboard-action primary">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add Product</span>
                 </a>
             </div>
-        </div>
-    </div>
 
-    <!-- Search -->
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <form method="get" class="d-flex">
-                <input type="text" name="search" class="form-control me-2" placeholder="Search loan products..." value="{{ search }}">
-                <button type="submit" class="btn btn-outline-primary">
-                    <i class="bi bi-search"></i> Search
-                </button>
+        </div>
+
+        <!-- =========================================================
+             SEARCH & FILTERS
+        ========================================================== -->
+
+        <div class="filter-section mb-4">
+            <form method="get" class="filter-form">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Search products..." value="{{ search }}">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Loan Type</label>
+                        <select name="loan_type" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="INPUT" {% if loan_type == 'INPUT' %}selected{% endif %}>Mkopo wa Pembejeo</option>
+                            <option value="PRODUCTION" {% if loan_type == 'PRODUCTION' %}selected{% endif %}>Mkopo wa Uzalishaji</option>
+                            <option value="MARKET" {% if loan_type == 'MARKET' %}selected{% endif %}>Mkopo wa Biashara</option>
+                            <option value="GENERAL" {% if loan_type == 'GENERAL' %}selected{% endif %}>Mkopo wa Jumla</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Status</label>
+                        <select name="is_active" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="active" {% if is_active == 'active' %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if is_active == 'inactive' %}selected{% endif %}>Inactive</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                        <a href="{% url 'financial_loan_products' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </a>
+                    </div>
+                </div>
             </form>
         </div>
-    </div>
 
-    <!-- Products Table -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-            {% if products %}
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Name</th>
-                                <th>Interest Rate</th>
-                                <th>Min Amount</th>
-                                <th>Max Amount</th>
-                                <th>Duration</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for product in products %}
+        <!-- =========================================================
+             TABLE
+        ========================================================== -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">
+                        <span class="panel-title-icon">
+                            <i class="bi bi-list-ul"></i>
+                        </span>
+                        All Products
+                    </div>
+                    <p class="panel-subtitle">
+                        {% if products %}
+                            Showing {{ products|length }} of {{ products.paginator.count }} products
+                        {% else %}
+                            No products found
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-body">
+
+                {% if products %}
+
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
-                                    <td><span class="fw-bold">{{ product.name }}</span></td>
-                                    <td>{{ product.interest_rate }}%</td>
-                                    <td>TSh {{ product.min_amount|floatformat:0 }}</td>
-                                    <td>TSh {{ product.max_amount|floatformat:0 }}</td>
-                                    <td>{{ product.duration_months }} months</td>
-                                    <td>
-                                        <span class="badge {% if product.is_active %}bg-success{% else %}bg-secondary{% endif %}">
-                                            {% if product.is_active %}Active{% else %}Inactive{% endif %}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{% url 'financial_loan_product_edit' product.id %}" class="btn btn-outline-warning">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <a href="{% url 'financial_loan_product_delete' product.id %}" class="btn btn-outline-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        </div>
-                                    </td>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Interest</th>
+                                    <th>Min Amount</th>
+                                    <th>Max Amount</th>
+                                    <th>Duration</th>
+                                    <th>Applications</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                    <tr>
+                                        <td>
+                                            <span class="product-name">{{ product.name }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="type-badge {{ product.loan_type|lower }}">
+                                                {{ product.get_loan_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="interest-rate">{{ product.interest_rate }}%</span>
+                                        </td>
+                                        <td>
+                                            <span class="amount">TSh {{ product.min_amount|floatformat:0 }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="amount">TSh {{ product.max_amount|floatformat:0 }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="duration">{{ product.duration_months }} months</span>
+                                        </td>
+                                        <td>
+                                            <span class="app-count">{{ product.applications_count|default:0 }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge {% if product.is_active %}active{% else %}inactive{% endif %}">
+                                                <span class="status-dot"></span>
+                                                {% if product.is_active %}Active{% else %}Inactive{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'financial_loan_product_detail' product.id %}" 
+                                                   class="btn btn-sm btn-outline-info" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{% url 'financial_loan_product_edit' product.id %}" 
+                                                   class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form method="post" action="{% url 'financial_loan_product_toggle' product.id %}" 
+                                                      class="d-inline toggle-form">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm {% if product.is_active %}btn-outline-secondary{% else %}btn-outline-success{% endif %}" 
+                                                            title="{% if product.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                                        <i class="bi {% if product.is_active %}bi-pause-circle{% else %}bi-play-circle{% endif %}"></i>
+                                                    </button>
+                                                </form>
+                                                <a href="{% url 'financial_loan_product_delete' product.id %}" 
+                                                   class="btn btn-sm btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Pagination -->
-                {% if products.has_other_pages %}
-                    <nav class="mt-3">
-                        <ul class="pagination justify-content-center">
-                            {% if products.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ products.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">Previous</a>
-                                </li>
-                            {% endif %}
-                            {% for num in products.paginator.page_range %}
-                                <li class="page-item {% if products.number == num %}active{% endif %}">
-                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
-                                </li>
-                            {% endfor %}
-                            {% if products.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ products.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
+                    <!-- Pagination -->
+                    {% if products.has_other_pages %}
+                        <div class="pagination-wrapper">
+                            <nav>
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if products.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if loan_type %}&loan_type={{ loan_type }}{% endif %}">
+                                                <i class="bi bi-chevron-left"></i> Previous
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in products.paginator.page_range %}
+                                        <li class="page-item {% if products.number == num %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if loan_type %}&loan_type={{ loan_type }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+
+                                    {% if products.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ products.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if loan_type %}&loan_type={{ loan_type }}{% endif %}">
+                                                Next <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+
+                {% else %}
+
+                    <!-- Empty State -->
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-boxes"></i>
+                        </div>
+                        <h5>No loan products yet</h5>
+                        <p>
+                            Create your first loan product to start offering
+                            financial services to farmers.
+                        </p>
+                        <a href="{% url 'financial_loan_product_create' %}" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-1"></i> Add Loan Product
+                        </a>
+                    </div>
+
                 {% endif %}
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-inbox display-1 text-muted d-block mb-3"></i>
-                    <h5 class="text-muted">No loan products yet</h5>
-                    <p class="text-muted small">Create your first loan product.</p>
-                    <a href="{% url 'financial_loan_product_create' %}" class="btn btn-success">
-                        <i class="bi bi-plus-circle me-1"></i> Add Loan Product
-                    </a>
-                </div>
-            {% endif %}
+
+            </div>
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   FINANCIAL PRODUCTS - COMPLETE STYLES
+============================================================ */
+
+.financial-products {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-subtitle i {
+    color: #21874b;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.dashboard-action.primary {
+    color: #fff;
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    box-shadow: 0 4px 12px rgba(26,110,62,.15);
+}
+
+.dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: 22px;
+}
+
+.filter-form {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(27,67,43,.04);
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group:first-child {
+    min-width: 200px;
+}
+
+.filter-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #8a948e;
+    margin-bottom: 3px;
+    letter-spacing: .3px;
+}
+
+.filter-group .form-control,
+.filter-group .form-select {
+    border-radius: 8px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.8rem;
+    background: #fff;
+    color: #1c3326;
+    width: 100%;
+}
+
+.filter-group .form-control:focus,
+.filter-group .form-select:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.1);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.filter-actions .btn {
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.45rem 1.2rem;
+    min-height: 38px;
+}
+
+.filter-actions .btn-primary {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.filter-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+}
+
+.filter-actions .btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.filter-actions .btn-secondary:hover {
+    background: #dce1dd;
+}
+
+/* Panel */
+.dashboard-panel {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 19px 21px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #1c3326;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.panel-title-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: #21874b;
+    background: #e9f6ed;
+    font-size: .82rem;
+}
+
+.panel-subtitle {
+    margin: 4px 0 0 41px;
+    color: #9aa39e;
+    font-size: .68rem;
+}
+
+.panel-body {
+    padding: 0;
+}
+
+/* Table */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.data-table th {
+    padding: 12px 14px;
+    color: #8a948e;
+    background: #fafcfb;
+    border-bottom: 1px solid #edf0ee;
+    font-size: .62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.data-table td {
+    padding: 14px 14px;
+    border-bottom: 1px solid #f0f2f1;
+    color: #526159;
+    font-size: .74rem;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fcfa;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.product-name {
+    font-weight: 700;
+    color: #1a6e3e;
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+.type-badge.input { color: #177a43; background: #e7f6ec; }
+.type-badge.production { color: #2869d6; background: #edf3ff; }
+.type-badge.market { color: #a96d00; background: #fff5dc; }
+.type-badge.general { color: #6c7a72; background: #f0f2f1; }
+
+.interest-rate {
+    font-weight: 600;
+    color: #2869d6;
+}
+
+.amount {
+    font-weight: 600;
+    color: #1c3326;
+    white-space: nowrap;
+}
+
+.duration {
+    color: #6c7a72;
+}
+
+.app-count {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #f0f2f1;
+    color: #6c7a72;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: .63rem;
+    font-weight: 700;
+}
+
+.status-badge.active {
+    color: #177a43;
+    background: #e7f6ec;
+}
+
+.status-badge.inactive {
+    color: #66716b;
+    background: #f0f2f1;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.action-buttons .btn {
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-width: 1.5px;
+}
+
+.action-buttons .btn-outline-info:hover {
+    background: #17a2b8;
+    color: #fff;
+}
+
+.action-buttons .btn-outline-warning:hover {
+    background: #ffc107;
+    color: #212529;
+}
+
+.action-buttons .btn-outline-secondary:hover {
+    background: #6c757d;
+    color: #fff;
+}
+
+.action-buttons .btn-outline-success:hover {
+    background: #28a745;
+    color: #fff;
+}
+
+.action-buttons .btn-outline-danger:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+.action-buttons .toggle-form {
+    display: inline;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    padding: 16px 21px;
+    border-top: 1px solid #edf0ee;
+}
+
+.pagination {
+    gap: 3px;
+}
+
+.pagination .page-link {
+    border: 1.5px solid #dee2e6;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6c7a72;
+    background: #fff;
+}
+
+.pagination .page-link:hover {
+    background: #f0f7f0;
+    border-color: #2d8f4e;
+    color: #1a6e3e;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border-color: #1a6e3e;
+    color: #fff;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 65px 25px;
+}
+
+.empty-icon {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    border-radius: 18px;
+    color: #8d9991;
+    background: #f1f4f2;
+    font-size: 1.8rem;
+}
+
+.empty-state h5 {
+    color: #4d5d54;
+    font-size: .95rem;
+    font-weight: 800;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    color: #9aa39e;
+    font-size: .76rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .filter-group {
+        min-width: 130px;
+    }
+    .filter-group:first-child {
+        min-width: 150px;
+    }
+    .filter-actions {
+        min-width: 100%;
+    }
+    .data-table {
+        min-width: 800px;
+    }
+}
+
+@media (max-width: 768px) {
+    .financial-products {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+        margin-bottom: 22px;
+    }
+
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .filter-row {
+        flex-direction: column;
+    }
+    .filter-group {
+        min-width: 100%;
+    }
+    .filter-actions {
+        flex-direction: row;
+    }
+    .filter-actions .btn {
+        flex: 1;
+    }
+
+    .panel-header {
+        padding: 15px;
+    }
+
+    .panel-subtitle {
+        margin-left: 0;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.68rem;
+    }
+
+    .action-buttons .btn {
+        padding: 3px 6px;
+        font-size: 0.65rem;
+    }
+
+    .empty-state {
+        padding: 40px 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .data-table {
+        min-width: 700px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+        font-size: 0.65rem;
+    }
+
+    .action-buttons {
+        gap: 2px;
+    }
+    .action-buttons .btn {
+        padding: 2px 5px;
+        font-size: 0.6rem;
+    }
+
+    .type-badge {
+        font-size: 0.55rem;
+        padding: 1px 7px;
+    }
+}
+</style>
 {% endblock %}

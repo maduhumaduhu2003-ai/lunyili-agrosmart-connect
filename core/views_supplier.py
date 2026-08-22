@@ -13,7 +13,8 @@ from .forms import ProductForm, SupplierProfileForm
 
 @login_required
 def supplier_profile_create(request):
-    """Create supplier profile"""
+    """Create supplier profile - auto-fill phone and email from User"""
+    
     if Supplier.objects.filter(user=request.user).exists():
         messages.info(request, "You already have a supplier profile.")
         return redirect('supplier_products')
@@ -23,6 +24,11 @@ def supplier_profile_create(request):
         if form.is_valid():
             supplier = form.save(commit=False)
             supplier.user = request.user
+            
+            # ✅ Auto-fill phone and email from User model
+            supplier.phone = request.user.phone or ''
+            supplier.email = request.user.email or ''
+            
             supplier.save()
             messages.success(request, f"Supplier profile '{supplier.company_name}' created successfully!")
             return redirect('supplier_products')
@@ -31,7 +37,11 @@ def supplier_profile_create(request):
     else:
         form = SupplierProfileForm()
     
-    return render(request, 'supplier/profile_create.html', {'form': form})
+    context = {
+        'form': form,
+        'user': request.user,  
+    }
+    return render(request, 'supplier/profile_create.html', context)
 
 
 @login_required
@@ -182,7 +192,8 @@ def supplier_orders(request):
     
     status_counts = {
         'PENDING': Order.objects.filter(supplier=supplier, status='PENDING').count(),
-        'ACCEPTED': Order.objects.filter(supplier=supplier, status='ACCEPTED').count(),
+        'PROCESSING': Order.objects.filter(supplier=supplier, status='PROCESSING').count(),
+        'PAYMENT_PENDING': Order.objects.filter(supplier=supplier, status='PAYMENT_PENDING').count(),
         'DISPATCHED': Order.objects.filter(supplier=supplier, status='DISPATCHED').count(),
         'DELIVERED': Order.objects.filter(supplier=supplier, status='DELIVERED').count(),
         'CANCELLED': Order.objects.filter(supplier=supplier, status='CANCELLED').count(),
@@ -212,13 +223,13 @@ def supplier_order_detail(request, order_id):
     if request.method == 'POST':
         action = request.POST.get('action')
         
-        if action == 'accept':
-            order.status = 'ACCEPTED'
+        if action == 'accept' and order.status in ['PENDING', 'SUPPLIER_PAID']:
+            order.status = 'PROCESSING'
             order.save()
             messages.success(request, f"Order {order.reference} accepted!")
             return redirect('supplier_order_detail', order_id=order.id)
             
-        elif action == 'dispatch':
+        elif action == 'dispatch' and order.status == 'PROCESSING':
             order.status = 'DISPATCHED'
             order.save()
             messages.success(request, f"Order {order.reference} dispatched!")
@@ -242,3 +253,45 @@ def supplier_order_detail(request, order_id):
         'items': items,
     }
     return render(request, 'supplier/order_detail.html', context)
+
+
+@login_required
+def supplier_profile_edit(request):
+    """Edit supplier profile with location"""
+    supplier = Supplier.objects.filter(user=request.user).first()
+    
+    if not supplier:
+        messages.warning(request, "Please complete your supplier profile first.")
+        return redirect('supplier_profile_create')
+    
+    if request.method == 'POST':
+        form = SupplierProfileForm(request.POST, request.FILES, instance=supplier)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('supplier_products')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = SupplierProfileForm(instance=supplier)
+    
+    context = {
+        'form': form,
+        'supplier': supplier,
+    }
+    return render(request, 'supplier/profile_edit.html', context)
+
+@login_required
+def supplier_dashboard(request):
+    """Supplier dashboard view"""
+    supplier = Supplier.objects.filter(user=request.user).first()
+    
+    if not supplier:
+        messages.warning(request, "Please complete your supplier profile first.")
+        return redirect('supplier_profile_create')
+    
+    # Get dashboard data
+    from .views import get_supplier_dashboard_data
+    context = get_supplier_dashboard_data(request.user)
+    
+    return render(request, 'dashboards/supplier.html', context)

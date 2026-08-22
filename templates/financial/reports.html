@@ -1,0 +1,867 @@
+<!-- templates/financial/reports.html -->
+{% extends 'base.html' %}
+
+{% block title %}Reports - Financial Institution{% endblock %}
+
+{% block content %}
+
+<div class="reports-page">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+        <!-- =========================================================
+             HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header">
+
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Reports
+                </div>
+                <h1 class="dashboard-title">
+                    Financial Reports
+                </h1>
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-graph-up me-1"></i>
+                    Analyze your loan portfolio performance
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a href="{% url 'financial_dashboard' %}" class="dashboard-action secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- =========================================================
+             DATE RANGE FILTER
+        ========================================================== -->
+
+        <div class="filter-section mb-4">
+            <form method="get" class="filter-form">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Report Type</label>
+                        <select name="report_type" class="form-select">
+                            <option value="summary" {% if report_type == 'summary' %}selected{% endif %}>Summary</option>
+                            <option value="applications" {% if report_type == 'applications' %}selected{% endif %}>Applications</option>
+                            <option value="disbursements" {% if report_type == 'disbursements' %}selected{% endif %}>Disbursements</option>
+                            <option value="repayments" {% if report_type == 'repayments' %}selected{% endif %}>Repayments</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">From Date</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ date_from|date:'Y-m-d' }}">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">To Date</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ date_to|date:'Y-m-d' }}">
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Generate Report
+                        </button>
+                        <a href="{% url 'financial_reports' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- =========================================================
+             SUMMARY STATS
+        ========================================================== -->
+
+        <div class="stats-grid mb-4">
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div>
+                        <span class="stat-label">Applications</span>
+                        <h2>{{ summary.total_applications|default:0 }}</h2>
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                </div>
+                <div class="stat-footer">
+                    <span class="stat-indicator blue-text">
+                        <i class="bi bi-check-circle-fill"></i>
+                        {{ summary.total_approved|default:0 }} approved
+                    </span>
+                    <span>Total</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div>
+                        <span class="stat-label">Disbursed</span>
+                        <h2>TSh {{ summary.total_disbursed|floatformat:0|default:"0" }}</h2>
+                    </div>
+                    <div class="stat-icon green">
+                        <i class="bi bi-cash"></i>
+                    </div>
+                </div>
+                <div class="stat-footer">
+                    <span class="stat-indicator green-text">
+                        <i class="bi bi-arrow-up-right"></i>
+                        Total disbursed
+                    </span>
+                    <span>Amount</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div>
+                        <span class="stat-label">Recovered</span>
+                        <h2>TSh {{ summary.total_recovered|floatformat:0|default:"0" }}</h2>
+                    </div>
+                    <div class="stat-icon purple">
+                        <i class="bi bi-arrow-down-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-footer">
+                    <span class="stat-indicator purple-text">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Repayments received
+                    </span>
+                    <span>Recovered</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div>
+                        <span class="stat-label">Outstanding</span>
+                        <h2>TSh {{ summary.total_outstanding|floatformat:0|default:"0" }}</h2>
+                    </div>
+                    <div class="stat-icon orange">
+                        <i class="bi bi-credit-card"></i>
+                    </div>
+                </div>
+                <div class="stat-footer">
+                    <span class="stat-indicator orange-text">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        Active balance
+                    </span>
+                    <span>Outstanding</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             MONTHLY CHART
+        ========================================================== -->
+
+        <div class="dashboard-panel mb-4">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">
+                        <span class="panel-title-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </span>
+                        Monthly Trends
+                    </div>
+                    <p class="panel-subtitle">
+                        Applications, disbursements, and recoveries over time
+                    </p>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="chart-container">
+                    <div class="chart-grid">
+                        {% for month in monthly_data %}
+                            <div class="chart-column">
+                                <div class="chart-label">{{ month.month }}</div>
+                                <div class="chart-bars">
+                                    <div class="chart-bar disbursed" style="height: {{ month.disbursed|floatformat:0|default:0|divisibleby:1000 }}px; max-height: 200px;">
+                                        <span class="bar-value">TSh {{ month.disbursed|floatformat:0|default:"0" }}</span>
+                                    </div>
+                                    <div class="chart-bar recovered" style="height: {{ month.recovered|floatformat:0|default:0|divisibleby:1000 }}px; max-height: 200px;">
+                                        <span class="bar-value">TSh {{ month.recovered|floatformat:0|default:"0" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item">
+                            <span class="legend-color disbursed"></span>
+                            Disbursed
+                        </span>
+                        <span class="legend-item">
+                            <span class="legend-color recovered"></span>
+                            Recovered
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             DETAIL TABLES
+        ========================================================== -->
+
+        <div class="row g-4">
+
+            <!-- Recent Applications -->
+            <div class="col-lg-6">
+                <div class="dashboard-panel">
+                    <div class="panel-header compact">
+                        <div>
+                            <div class="panel-title">
+                                <span class="panel-title-icon">
+                                    <i class="bi bi-list-ul"></i>
+                                </span>
+                                Recent Applications
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body compact">
+                        {% if applications %}
+                            <div class="mini-table">
+                                {% for app in applications %}
+                                    <div class="mini-row">
+                                        <div class="mini-cell">
+                                            <span class="mini-name">{{ app.farmer.full_name|default:"-" }}</span>
+                                            <span class="mini-amount">TSh {{ app.amount|floatformat:0 }}</span>
+                                        </div>
+                                        <span class="status-badge-small {{ app.status|lower }}">
+                                            {{ app.get_status_display }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">No applications in this period</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Disbursements -->
+            <div class="col-lg-6">
+                <div class="dashboard-panel">
+                    <div class="panel-header compact">
+                        <div>
+                            <div class="panel-title">
+                                <span class="panel-title-icon">
+                                    <i class="bi bi-cash"></i>
+                                </span>
+                                Recent Disbursements
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body compact">
+                        {% if disbursements %}
+                            <div class="mini-table">
+                                {% for d in disbursements %}
+                                    <div class="mini-row">
+                                        <div class="mini-cell">
+                                            <span class="mini-name">{{ d.application.farmer.full_name|default:"-" }}</span>
+                                            <span class="mini-amount">TSh {{ d.amount|floatformat:0 }}</span>
+                                        </div>
+                                        <span class="status-badge-small {{ d.status|lower }}">
+                                            {{ d.get_status_display }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">No disbursements in this period</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   REPORTS - COMPLETE STYLES
+============================================================ */
+
+.reports-page {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-subtitle i {
+    color: #21874b;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.dashboard-action.secondary {
+    color: #315dcb;
+    border: 1px solid #d9e1f5;
+    background: #fff;
+}
+
+.dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Filter */
+.filter-section {
+    margin-bottom: 22px;
+}
+
+.filter-form {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(27,67,43,.04);
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #8a948e;
+    margin-bottom: 3px;
+    letter-spacing: .3px;
+}
+
+.filter-group .form-control,
+.filter-group .form-select {
+    border-radius: 8px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.8rem;
+    background: #fff;
+    color: #1c3326;
+    width: 100%;
+}
+
+.filter-group .form-control:focus,
+.filter-group .form-select:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.1);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.filter-actions .btn {
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.45rem 1.2rem;
+    min-height: 38px;
+}
+
+.filter-actions .btn-primary {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.filter-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+}
+
+.filter-actions .btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.filter-actions .btn-secondary:hover {
+    background: #dce1dd;
+}
+
+/* Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.stat-card {
+    padding: 21px;
+    background: #fff;
+    border: 1px solid #e7ece8;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    transition: all .25s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(27,67,43,.08);
+}
+
+.stat-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.stat-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #829088;
+    font-size: .73rem;
+    font-weight: 700;
+}
+
+.stat-card h2 {
+    margin: 0;
+    color: #1c3326;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.15rem;
+}
+
+.stat-icon.blue { color: #2869d6; background: #edf3ff; }
+.stat-icon.green { color: #1f8249; background: #e8f6ec; }
+.stat-icon.purple { color: #7853c7; background: #f2edff; }
+.stat-icon.orange { color: #d58a0a; background: #fff5df; }
+
+.stat-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 17px;
+    padding-top: 12px;
+    border-top: 1px solid #eef1ef;
+    color: #a0aaa4;
+    font-size: .68rem;
+}
+
+.stat-indicator {
+    font-weight: 700;
+}
+
+.blue-text { color: #3972d4; }
+.green-text { color: #21874b; }
+.purple-text { color: #7653c4; }
+.orange-text { color: #c88616; }
+
+/* Chart */
+.dashboard-panel {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 19px 21px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.panel-header.compact {
+    padding: 17px 19px;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #1c3326;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.panel-title-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: #21874b;
+    background: #e9f6ed;
+    font-size: .82rem;
+}
+
+.panel-subtitle {
+    margin: 4px 0 0 41px;
+    color: #9aa39e;
+    font-size: .68rem;
+}
+
+.panel-body {
+    padding: 0;
+}
+
+.panel-body.compact {
+    padding: 16px 19px;
+}
+
+/* Chart */
+.chart-container {
+    padding: 20px 20px 10px;
+}
+
+.chart-grid {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 250px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.chart-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.chart-label {
+    font-size: 0.6rem;
+    color: #8a948e;
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+.chart-bars {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+    height: 200px;
+}
+
+.chart-bar {
+    width: 24px;
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    transition: height 0.6s ease;
+}
+
+.chart-bar.disbursed {
+    background: linear-gradient(180deg, #2d8f4e, #1a6e3e);
+}
+
+.chart-bar.recovered {
+    background: linear-gradient(180deg, #4dabf7, #2869d6);
+}
+
+.bar-value {
+    position: absolute;
+    top: -18px;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #1c3326;
+    white-space: nowrap;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding-top: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: #6c7a72;
+}
+
+.legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.legend-color.disbursed {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+}
+
+.legend-color.recovered {
+    background: linear-gradient(135deg, #2869d6, #4dabf7);
+}
+
+/* Mini Table */
+.mini-table {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mini-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f2f1;
+}
+
+.mini-row:last-child {
+    border-bottom: none;
+}
+
+.mini-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.mini-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1c3326;
+}
+
+.mini-amount {
+    font-size: 0.7rem;
+    color: #8a948e;
+}
+
+.status-badge-small {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+.status-badge-small.pending { color: #a96d00; background: #fff5dc; }
+.status-badge-small.approved { color: #177a43; background: #e7f6ec; }
+.status-badge-small.disbursed { color: #087e9d; background: #e3f7fc; }
+.status-badge-small.rejected { color: #b32121; background: #fde8e8; }
+.status-badge-small.success { color: #177a43; background: #e7f6ec; }
+.status-badge-small.failed { color: #b32121; background: #fde8e8; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .filter-group {
+        min-width: 130px;
+    }
+    .filter-actions {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .reports-page {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+        margin-bottom: 22px;
+    }
+
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .filter-row {
+        flex-direction: column;
+    }
+    .filter-group {
+        min-width: 100%;
+    }
+    .filter-actions {
+        flex-direction: row;
+    }
+    .filter-actions .btn {
+        flex: 1;
+    }
+
+    .panel-header {
+        padding: 15px;
+    }
+
+    .panel-subtitle {
+        margin-left: 0;
+    }
+
+    .chart-grid {
+        height: 180px;
+    }
+    .chart-bars {
+        height: 150px;
+    }
+    .chart-bar {
+        width: 18px;
+    }
+    .bar-value {
+        font-size: 0.45rem;
+        top: -14px;
+    }
+    .chart-label {
+        font-size: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .stat-card {
+        padding: 15px;
+        border-radius: 13px;
+    }
+    .stat-card h2 {
+        font-size: 1.5rem;
+    }
+    .stat-icon {
+        width: 37px;
+        height: 37px;
+        font-size: .95rem;
+    }
+    .stat-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+    }
+
+    .chart-grid {
+        height: 150px;
+    }
+    .chart-bars {
+        height: 120px;
+    }
+    .chart-bar {
+        width: 14px;
+    }
+    .bar-value {
+        font-size: 0.4rem;
+        top: -12px;
+    }
+
+    .mini-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+</style>
+{% endblock %}

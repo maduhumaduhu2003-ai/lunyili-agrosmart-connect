@@ -1,0 +1,735 @@
+<!-- templates/financial/farmers.html -->
+{% extends 'base.html' %}
+
+{% block title %}Farmers - Financial Institution{% endblock %}
+
+{% block content %}
+
+<div class="farmers-page">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+        <!-- =========================================================
+             HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header">
+
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Farmers
+                </div>
+                <h1 class="dashboard-title">
+                    Farmers
+                </h1>
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-people me-1"></i>
+                    Farmers with loan applications
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a href="{% url 'financial_dashboard' %}" class="dashboard-action secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- =========================================================
+             STATS
+        ========================================================== -->
+
+        <div class="stats-grid-small mb-4">
+            <div class="stat-card-small">
+                <span class="stat-label-small">Total Farmers</span>
+                <span class="stat-value-small">{{ farmers.paginator.count|default:0 }}</span>
+            </div>
+            <div class="stat-card-small">
+                <span class="stat-label-small">Active Farmers</span>
+                <span class="stat-value-small">{{ farmers|length }}</span>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             SEARCH
+        ========================================================== -->
+
+        <div class="search-section mb-4">
+            <form method="get" class="search-form">
+                <div class="search-row">
+                    <div class="search-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Search by name, phone, location..." value="{{ search }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    {% if search %}
+                        <a href="{% url 'financial_farmers' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <!-- =========================================================
+             TABLE
+        ========================================================== -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">
+                        <span class="panel-title-icon">
+                            <i class="bi bi-list-ul"></i>
+                        </span>
+                        All Farmers
+                    </div>
+                    <p class="panel-subtitle">
+                        {% if farmers %}
+                            Showing {{ farmers|length }} of {{ farmers.paginator.count }} farmers
+                        {% else %}
+                            No farmers found
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-body">
+
+                {% if farmers %}
+
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Farmer</th>
+                                    <th>Phone</th>
+                                    <th>Location</th>
+                                    <th>Loans</th>
+                                    <th>Total Borrowed</th>
+                                    <th>Total Repaid</th>
+                                    <th>Credit Score</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for farmer in farmers %}
+                                    <tr>
+                                        <td>
+                                            <div class="farmer-cell">
+                                                <div class="farmer-avatar">
+                                                    <i class="bi bi-person-fill"></i>
+                                                </div>
+                                                <span class="farmer-name">{{ farmer.full_name|default:"-" }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="phone">{{ farmer.phone_number }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="location">{{ farmer.location_summary|default:"-" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="loan-count">{{ farmer.loan_count|default:0 }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="amount">TSh {{ farmer.total_borrowed|floatformat:0|default:"0" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="amount success">TSh {{ farmer.total_repaid|floatformat:0|default:"0" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="score-badge 
+                                                {% if farmer.credit_readiness_score >= 75 %}high
+                                                {% elif farmer.credit_readiness_score >= 40 %}medium
+                                                {% else %}low{% endif %}">
+                                                {{ farmer.credit_readiness_score }}/100
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'financial_farmer_detail' farmer.id %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if farmers.has_other_pages %}
+                        <div class="pagination-wrapper">
+                            <nav>
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if farmers.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ farmers.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                                                <i class="bi bi-chevron-left"></i> Previous
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in farmers.paginator.page_range %}
+                                        <li class="page-item {% if farmers.number == num %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+
+                                    {% if farmers.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ farmers.next_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                                                Next <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+
+                {% else %}
+
+                    <!-- Empty State -->
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h5>No farmers found</h5>
+                        <p>
+                            Farmers with loan applications will appear here.
+                            No farmers have applied for loans yet.
+                        </p>
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   FARMERS - COMPLETE STYLES
+============================================================ */
+
+.farmers-page {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-subtitle i {
+    color: #21874b;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.dashboard-action.secondary {
+    color: #315dcb;
+    border: 1px solid #d9e1f5;
+    background: #fff;
+}
+
+.dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Stats */
+.stats-grid-small {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    max-width: 400px;
+}
+
+.stat-card-small {
+    text-align: center;
+    padding: 16px 14px;
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(27,67,43,.04);
+}
+
+.stat-label-small {
+    display: block;
+    font-size: 0.6rem;
+    color: #8a948e;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.stat-value-small {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1c3326;
+}
+
+/* Search */
+.search-section {
+    margin-bottom: 22px;
+}
+
+.search-form {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(27,67,43,.04);
+}
+
+.search-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.search-group {
+    flex: 1;
+}
+
+.search-group .form-control {
+    border-radius: 8px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.8rem;
+    background: #fff;
+    color: #1c3326;
+    width: 100%;
+}
+
+.search-group .form-control:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.1);
+}
+
+.search-row .btn {
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.45rem 1.2rem;
+    min-height: 38px;
+    white-space: nowrap;
+}
+
+.search-row .btn-primary {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.search-row .btn-primary:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+}
+
+.search-row .btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.search-row .btn-secondary:hover {
+    background: #dce1dd;
+}
+
+/* Panel */
+.dashboard-panel {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 19px 21px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #1c3326;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.panel-title-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: #21874b;
+    background: #e9f6ed;
+    font-size: .82rem;
+}
+
+.panel-subtitle {
+    margin: 4px 0 0 41px;
+    color: #9aa39e;
+    font-size: .68rem;
+}
+
+.panel-body {
+    padding: 0;
+}
+
+/* Table */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.data-table th {
+    padding: 12px 14px;
+    color: #8a948e;
+    background: #fafcfb;
+    border-bottom: 1px solid #edf0ee;
+    font-size: .62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.data-table td {
+    padding: 14px 14px;
+    border-bottom: 1px solid #f0f2f1;
+    color: #526159;
+    font-size: .74rem;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fcfa;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.farmer-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.farmer-avatar {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #21874b;
+    background: #e8f5eb;
+    font-size: .75rem;
+    flex-shrink: 0;
+}
+
+.farmer-name {
+    font-weight: 600;
+    color: #1c3326;
+    font-size: 0.8rem;
+}
+
+.phone {
+    color: #6c7a72;
+    font-size: 0.75rem;
+}
+
+.location {
+    color: #8a948e;
+    font-size: 0.72rem;
+}
+
+.loan-count {
+    font-weight: 700;
+    color: #1c3326;
+}
+
+.amount {
+    font-weight: 600;
+    color: #1c3326;
+    white-space: nowrap;
+}
+
+.amount.success { color: #177a43; }
+
+.score-badge {
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.score-badge.high { color: #177a43; background: #e7f6ec; }
+.score-badge.medium { color: #a96d00; background: #fff5dc; }
+.score-badge.low { color: #b32121; background: #fde8e8; }
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.action-buttons .btn {
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-width: 1.5px;
+}
+
+.action-buttons .btn-outline-primary:hover {
+    background: #0d6efd;
+    color: #fff;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    padding: 16px 21px;
+    border-top: 1px solid #edf0ee;
+}
+
+.pagination {
+    gap: 3px;
+}
+
+.pagination .page-link {
+    border: 1.5px solid #dee2e6;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6c7a72;
+    background: #fff;
+}
+
+.pagination .page-link:hover {
+    background: #f0f7f0;
+    border-color: #2d8f4e;
+    color: #1a6e3e;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border-color: #1a6e3e;
+    color: #fff;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 65px 25px;
+}
+
+.empty-icon {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    border-radius: 18px;
+    color: #8d9991;
+    background: #f1f4f2;
+    font-size: 1.8rem;
+}
+
+.empty-state h5 {
+    color: #4d5d54;
+    font-size: .95rem;
+    font-weight: 800;
+}
+
+.empty-state p {
+    margin-bottom: 0;
+    color: #9aa39e;
+    font-size: .76rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .farmers-page {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+        margin-bottom: 22px;
+    }
+
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .search-row {
+        flex-direction: column;
+    }
+    .search-group {
+        width: 100%;
+    }
+    .search-row .btn {
+        width: 100%;
+    }
+
+    .panel-header {
+        padding: 15px;
+    }
+
+    .panel-subtitle {
+        margin-left: 0;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.68rem;
+    }
+
+    .action-buttons .btn {
+        padding: 3px 6px;
+        font-size: 0.65rem;
+    }
+
+    .empty-state {
+        padding: 40px 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .stats-grid-small {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .stat-card-small {
+        padding: 12px 10px;
+    }
+    .stat-value-small {
+        font-size: 1rem;
+    }
+
+    .data-table {
+        min-width: 700px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+        font-size: 0.65rem;
+    }
+
+    .score-badge {
+        font-size: 0.6rem;
+        padding: 2px 7px;
+    }
+}
+</style>
+{% endblock %}

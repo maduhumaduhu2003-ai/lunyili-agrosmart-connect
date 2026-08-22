@@ -1,138 +1,799 @@
+<!-- templates/profile.html -->
 {% extends 'base.html' %}
 
-{% block title %}Profile - AgroSimple{% endblock %}
+{% block title %}My Profile - AgroSmart Connect{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12 mb-4">
-            <h2><i class="bi bi-person-circle text-success"></i> My Profile</h2>
-            <hr>
+
+<div class="profile-page">
+
+    <div class="container py-4">
+
+        <div class="row">
+
+            <!-- =========================================================
+                 LEFT COLUMN - Profile Card
+            ========================================================== -->
+
+            <div class="col-lg-4">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body text-center">
+
+                        <!-- Profile Photo -->
+                        <div class="profile-photo-container mb-3">
+
+                            {% if user.profile_photo %}
+
+                                <img
+                                    src="{{ user.profile_photo.url }}"
+                                    class="profile-photo-large"
+                                    alt="{{ user.full_name }}"
+                                >
+
+                            {% else %}
+
+                                <div class="profile-photo-placeholder large">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                        <!-- Name & Role -->
+                        <h4 class="fw-bold mb-0">{{ user.full_name }}</h4>
+
+                        <p class="text-muted small">
+                            <i class="bi bi-person-badge me-1"></i>
+                            {{ user.get_role_display }}
+                        </p>
+
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-person me-1"></i>
+                            @{{ user.username }}
+                        </p>
+
+                        <!-- Verification Status -->
+                        <div class="verification-status mb-3">
+                            {% if user.is_verified %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-patch-check-fill me-1"></i>
+                                    Verified Account
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-clock me-1"></i>
+                                    Verification Pending
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Member Since -->
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-calendar me-1"></i>
+                            Member since {{ user.date_joined|date:"F Y" }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Role-Specific Profile Card -->
+                {% if supplier_profile %}
+
+                    <div class="card shadow-sm border-0 mt-3">
+
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-building text-success me-2"></i>
+                                Company Profile
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="company-info">
+
+                                {% if supplier_profile.logo %}
+
+                                    <img
+                                        src="{{ supplier_profile.logo.url }}"
+                                        class="company-logo mb-2"
+                                        alt="{{ supplier_profile.company_name }}"
+                                    >
+
+                                {% else %}
+
+                                    <div class="company-logo-placeholder mb-2">
+                                        <i class="bi bi-building"></i>
+                                    </div>
+
+                                {% endif %}
+
+                                <h5 class="fw-bold">{{ supplier_profile.company_name }}</h5>
+
+                                <div class="info-item">
+                                    <span class="info-label">Registration</span>
+                                    <span class="info-value">{{ supplier_profile.registration_number|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Location</span>
+                                    <span class="info-value">{{ supplier_profile.location_summary|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Region</span>
+                                    <span class="info-value">{{ supplier_profile.region|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">District</span>
+                                    <span class="info-value">{{ supplier_profile.district|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Verification</span>
+                                    <span class="info-value">
+                                        <span class="badge {% if supplier_profile.is_verified == 'VERIFIED' %}bg-success{% elif supplier_profile.is_verified == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ supplier_profile.get_is_verified_display|default:"Pending" }}
+                                        </span>
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% elif financial_profile %}
+
+                    <div class="card shadow-sm border-0 mt-3">
+
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-bank text-success me-2"></i>
+                                Institution Profile
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="company-info">
+
+                                {% if financial_profile.logo %}
+
+                                    <img
+                                        src="{{ financial_profile.logo.url }}"
+                                        class="company-logo mb-2"
+                                        alt="{{ financial_profile.institution_name }}"
+                                    >
+
+                                {% else %}
+
+                                    <div class="company-logo-placeholder mb-2">
+                                        <i class="bi bi-bank"></i>
+                                    </div>
+
+                                {% endif %}
+
+                                <h5 class="fw-bold">{{ financial_profile.institution_name }}</h5>
+
+                                <div class="info-item">
+                                    <span class="info-label">Type</span>
+                                    <span class="info-value">{{ financial_profile.get_institution_type_display|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Address</span>
+                                    <span class="info-value">{{ financial_profile.address|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Phone</span>
+                                    <span class="info-value">{{ financial_profile.phone|default:user.phone|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Email</span>
+                                    <span class="info-value">{{ financial_profile.email|default:user.email|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Verification</span>
+                                    <span class="info-value">
+                                        <span class="badge {% if financial_profile.is_verified %}bg-success{% else %}bg-warning{% endif %}">
+                                            {% if financial_profile.is_verified %}Verified{% else %}Pending{% endif %}
+                                        </span>
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% elif buyer_profile %}
+
+                    <div class="card shadow-sm border-0 mt-3">
+
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-person-badge text-success me-2"></i>
+                                Buyer Profile
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="company-info">
+
+                                <h5 class="fw-bold">{{ buyer_profile.company_name|default:user.full_name }}</h5>
+
+                                <div class="info-item">
+                                    <span class="info-label">Location</span>
+                                    <span class="info-value">{{ buyer_profile.location|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Phone</span>
+                                    <span class="info-value">{{ buyer_profile.phone|default:user.phone|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Email</span>
+                                    <span class="info-value">{{ buyer_profile.email|default:user.email|default:"-" }}</span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% elif extension_profile %}
+
+                    <div class="card shadow-sm border-0 mt-3">
+
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-person-workspace text-success me-2"></i>
+                                Extension Officer Profile
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="company-info">
+
+                                <div class="info-item">
+                                    <span class="info-label">Region</span>
+                                    <span class="info-value">{{ extension_profile.region|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">District</span>
+                                    <span class="info-value">{{ extension_profile.district|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Employer</span>
+                                    <span class="info-value">{{ extension_profile.employer|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Position</span>
+                                    <span class="info-value">{{ extension_profile.position|default:"-" }}</span>
+                                </div>
+
+                                <div class="info-item">
+                                    <span class="info-label">Qualification</span>
+                                    <span class="info-value">{{ extension_profile.qualification|default:"-" }}</span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =========================================================
+                 RIGHT COLUMN - Edit Profile Form
+            ========================================================== -->
+
+            <div class="col-lg-8">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-pencil-square text-success me-2"></i>
+                            Edit Profile
+                        </h5>
+                        <p class="text-muted small mb-0">Update your personal and company information</p>
+                    </div>
+
+                    <div class="card-body">
+
+                        <form method="post" enctype="multipart/form-data" data-loading="true"
+                              data-loading-title="Updating Profile"
+                              data-loading-message="Saving your information...">
+
+                            {% csrf_token %}
+
+                            <!-- ==========================================
+                                 PERSONAL INFORMATION
+                            =========================================== -->
+
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-person text-success me-2"></i>
+                                Personal Information
+                            </h6>
+
+                            <div class="row">
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" name="first_name" class="form-control"
+                                           value="{{ user.first_name }}" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control"
+                                           value="{{ user.last_name }}" required>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" name="email" class="form-control"
+                                           value="{{ user.email }}" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Phone</label>
+                                    <input type="text" name="phone" class="form-control"
+                                           value="{{ user.phone|default:'' }}">
+                                </div>
+
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                <textarea name="address" class="form-control" rows="2">{{ user.address|default:'' }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Profile Photo</label>
+                                <input type="file" name="profile_photo" class="form-control"
+                                       accept="image/*">
+                                <small class="form-text">Upload a profile picture (JPG, PNG)</small>
+                            </div>
+
+
+                            <!-- ==========================================
+                                 COMPANY/BUSINESS INFORMATION
+                            =========================================== -->
+
+                            <hr class="my-4">
+
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-building text-success me-2"></i>
+                                Company / Institution Information
+                            </h6>
+
+                            {% if user.role == 'SUPPLIER' %}
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Company Name</label>
+                                        <input type="text" name="company_name" class="form-control"
+                                               value="{{ supplier_profile.company_name|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Registration Number</label>
+                                        <input type="text" name="registration_number" class="form-control"
+                                               value="{{ supplier_profile.registration_number|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Company Phone</label>
+                                        <input type="text" name="company_phone" class="form-control"
+                                               value="{{ supplier_profile.phone|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Company Email</label>
+                                        <input type="email" name="company_email" class="form-control"
+                                               value="{{ supplier_profile.email|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Region</label>
+                                        <input type="text" name="region" class="form-control"
+                                               value="{{ supplier_profile.region|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">District</label>
+                                        <input type="text" name="district" class="form-control"
+                                               value="{{ supplier_profile.district|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Ward</label>
+                                        <input type="text" name="ward" class="form-control"
+                                               value="{{ supplier_profile.ward|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Village</label>
+                                        <input type="text" name="village" class="form-control"
+                                               value="{{ supplier_profile.village|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Company Address</label>
+                                    <textarea name="company_address" class="form-control" rows="2">{{ supplier_profile.address|default:'' }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Company Logo</label>
+                                    <input type="file" name="logo" class="form-control" accept="image/*">
+                                    <small class="form-text">Upload your company logo (JPG, PNG)</small>
+                                </div>
+
+                            {% elif user.role == 'FINANCIAL' %}
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Institution Name</label>
+                                        <input type="text" name="institution_name" class="form-control"
+                                               value="{{ financial_profile.institution_name|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Institution Type</label>
+                                        <select name="institution_type" class="form-select">
+                                            <option value="">Select type</option>
+                                            <option value="BANK" {% if financial_profile.institution_type == 'BANK' %}selected{% endif %}>Bank</option>
+                                            <option value="SACCOS" {% if financial_profile.institution_type == 'SACCOS' %}selected{% endif %}>SACCOS</option>
+                                            <option value="MFI" {% if financial_profile.institution_type == 'MFI' %}selected{% endif %}>Microfinance</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Institution Phone</label>
+                                        <input type="text" name="company_phone" class="form-control"
+                                               value="{{ financial_profile.phone|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Institution Email</label>
+                                        <input type="email" name="company_email" class="form-control"
+                                               value="{{ financial_profile.email|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Institution Address</label>
+                                    <textarea name="company_address" class="form-control" rows="2">{{ financial_profile.address|default:'' }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Institution Logo</label>
+                                    <input type="file" name="logo" class="form-control" accept="image/*">
+                                    <small class="form-text">Upload your institution logo (JPG, PNG)</small>
+                                </div>
+
+                            {% elif user.role == 'BUYER' %}
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Company Name</label>
+                                        <input type="text" name="company_name" class="form-control"
+                                               value="{{ buyer_profile.company_name|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Location</label>
+                                        <input type="text" name="location" class="form-control"
+                                               value="{{ buyer_profile.location|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Company Phone</label>
+                                        <input type="text" name="company_phone" class="form-control"
+                                               value="{{ buyer_profile.phone|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Company Email</label>
+                                        <input type="email" name="company_email" class="form-control"
+                                               value="{{ buyer_profile.email|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                            {% elif user.role == 'EXTENSION_OFFICER' %}
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Region</label>
+                                        <input type="text" name="region" class="form-control"
+                                               value="{{ extension_profile.region|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">District</label>
+                                        <input type="text" name="district" class="form-control"
+                                               value="{{ extension_profile.district|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Employer</label>
+                                        <input type="text" name="employer" class="form-control"
+                                               value="{{ extension_profile.employer|default:'' }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Position</label>
+                                        <input type="text" name="position" class="form-control"
+                                               value="{{ extension_profile.position|default:'' }}">
+                                    </div>
+
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Qualification</label>
+                                    <select name="qualification" class="form-select">
+                                        <option value="">Select qualification</option>
+                                        <option value="CERTIFICATE" {% if extension_profile.qualification == 'CERTIFICATE' %}selected{% endif %}>Certificate</option>
+                                        <option value="DIPLOMA" {% if extension_profile.qualification == 'DIPLOMA' %}selected{% endif %}>Diploma</option>
+                                        <option value="BACHELOR" {% if extension_profile.qualification == 'BACHELOR' %}selected{% endif %}>Bachelor's Degree</option>
+                                        <option value="MASTERS" {% if extension_profile.qualification == 'MASTERS' %}selected{% endif %}>Master's Degree</option>
+                                        <option value="PHD" {% if extension_profile.qualification == 'PHD' %}selected{% endif %}>PhD</option>
+                                    </select>
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- ==========================================
+                                 SUBMIT BUTTONS
+                            =========================================== -->
+
+                            <hr class="my-4">
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Save Changes
+                                </button>
+                                <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i>
+                                    Back to Dashboard
+                                </a>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
+
     </div>
 
-    <div class="row">
-        <!-- Profile Photo -->
-        <div class="col-md-3 mb-4">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    {% if user.profile_photo %}
-                        <img src="{{ user.profile_photo.url }}" alt="Profile Photo" 
-                             style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
-                    {% else %}
-                        <div style="width: 150px; height: 150px; border-radius: 50%; background: #ddd; margin: 0 auto; 
-                                    display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-person display-1 text-secondary"></i>
-                        </div>
-                    {% endif %}
-                    <h5 class="mt-3">{{ user.full_name }}</h5>
-                    <p class="text-muted">{{ user.username }}</p>
-                    <span class="badge bg-success">{{ user.get_role_display }}</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Profile Info -->
-        <div class="col-md-9">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Personal Information</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Username</label>
-                                <input type="text" class="form-control" value="{{ user.username }}" disabled>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Role</label>
-                                <input type="text" class="form-control" value="{{ user.get_role_display }}" disabled>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="first_name" class="form-label">First Name</label>
-                                <input type="text" name="first_name" id="first_name" class="form-control" 
-                                       value="{{ user.first_name }}">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="last_name" class="form-label">Last Name</label>
-                                <input type="text" name="last_name" id="last_name" class="form-control" 
-                                       value="{{ user.last_name }}">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" name="email" id="email" class="form-control" 
-                                       value="{{ user.email }}">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="text" name="phone" id="phone" class="form-control" 
-                                       value="{{ user.phone|default:'' }}">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <textarea name="address" id="address" class="form-control" rows="2">{{ user.address|default:'' }}</textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="profile_photo" class="form-label">Profile Photo</label>
-                            <input type="file" name="profile_photo" id="profile_photo" class="form-control" accept="image/*">
-                            <small class="text-muted">Leave empty to keep current photo.</small>
-                        </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Back
-                            </a>
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-save"></i> Update Profile
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Change Password Link -->
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="bi bi-key text-warning me-2"></i>
-                            <strong>Change Password</strong>
-                        </div>
-                        <a href="#" class="btn btn-outline-warning btn-sm">
-                            <i class="bi bi-pencil"></i> Change Password
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Account Info -->
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <small class="text-muted">Account Created:</small>
-                            <p class="mb-0">{{ user.created_at|date:"F d, Y H:i" }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <small class="text-muted">Last Login:</small>
-                            <p class="mb-0">{{ user.last_login|date:"F d, Y H:i"|default:"Never" }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   PROFILE PAGE - COMPLETE STYLES
+============================================================ */
+
+.profile-page {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Profile Photo */
+.profile-photo-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-photo-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.profile-photo-placeholder.large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e8f5eb, #d0ebd8);
+    color: #1a6e3e;
+    font-size: 3rem;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+/* Company Info */
+.company-info {
+    text-align: center;
+}
+
+.company-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    object-fit: contain;
+    border: 1px solid #e7ece8;
+    background: #fff;
+    padding: 4px;
+}
+
+.company-logo-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f7f0;
+    color: #1a6e3e;
+    font-size: 2rem;
+    margin: 0 auto;
+    border: 1px solid #e7ece8;
+}
+
+/* Info Items */
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f2f1;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #8a948e;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.info-value {
+    color: #1c3326;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid #edf0ee;
+    padding: 1.1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Verification Status */
+.verification-status .badge {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-page {
+        min-height: calc(100vh - 66px);
+    }
+
+    .profile-photo-large {
+        width: 90px;
+        height: 90px;
+    }
+
+    .profile-photo-placeholder.large {
+        width: 90px;
+        height: 90px;
+        font-size: 2.2rem;
+    }
+
+    .company-logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .company-logo-placeholder {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .card-body {
+        padding: 1.2rem;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+}
+</style>
 {% endblock %}

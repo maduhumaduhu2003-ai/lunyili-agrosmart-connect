@@ -1,117 +1,1260 @@
+<!-- templates/financial/application_detail.html -->
 {% extends 'base.html' %}
 
-{% block title %}Application Detail - Financial Institution{% endblock %}
+{% block title %}Application Detail - Financial{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1"><i class="bi bi-file-earmark-text text-success me-2"></i>Loan Application Details</h2>
-                    <p class="text-muted">Application #{{ application.id }}</p>
+
+<div class="financial-application-detail">
+
+    <div class="container-fluid px-3 px-lg-4 py-4">
+
+        <!-- Header -->
+        <div class="dashboard-header-compact mb-4">
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Loan Application
                 </div>
-                <a href="{% url 'financial_applications' %}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back
+                <h1 class="dashboard-title">
+                    Application #{{ application.id|slice:"-8" }}
+                </h1>
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-calendar me-1"></i>
+                    Created {{ application.created_at|date:"d M Y H:i" }}
+                    {% if application.loan_product %}
+                        <span class="separator">|</span>
+                        <i class="bi bi-box me-1"></i>
+                        {{ application.loan_product.name }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'financial_applications' %}" class="dashboard-action secondary">
+                    <i class="bi bi-arrow-left"></i> Back
                 </a>
             </div>
         </div>
-    </div>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Application Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Farmer</div>
-                        <div class="col-8">{{ application.farmer.full_name }}</div>
+        <div class="row g-4">
+
+            <!-- =========================================================
+                 LEFT COLUMN - Application Info
+            ========================================================== -->
+            <div class="col-lg-4">
+
+                <!-- Application Info -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-info-circle text-success me-2"></i>Application Info
+                        </h5>
                     </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Phone</div>
-                        <div class="col-8">{{ application.farmer.phone_number }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Loan Product</div>
-                        <div class="col-8">{{ application.loan_product.name }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Amount</div>
-                        <div class="col-8">TSh {{ application.amount|floatformat:0 }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Status</div>
-                        <div class="col-8">
-                            <span class="badge {% if application.status == 'PENDING' %}bg-warning{% elif application.status == 'APPROVED' %}bg-success{% elif application.status == 'DISBURSED' %}bg-info{% elif application.status == 'REJECTED' %}bg-danger{% else %}bg-secondary{% endif %}">
-                                {{ application.get_status_display }}
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">Application ID</span>
+                            <span class="info-value app-id">{{ application.id|slice:"-8" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Farmer</span>
+                            <span class="info-value">{{ application.farmer.full_name }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">{{ application.farmer.phone_number }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Product</span>
+                            <span class="info-value">{{ application.loan_product.name }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Loan Type</span>
+                            <span class="info-value">
+                                <span class="type-badge {{ application.loan_product.loan_type|lower }}">
+                                    {{ application.loan_product.get_loan_type_display }}
+                                </span>
                             </span>
                         </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Purpose</div>
-                        <div class="col-8">{{ application.purpose|default:"Not specified" }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4 fw-bold">Created</div>
-                        <div class="col-8">{{ application.created_at|date:"d M Y H:i" }}</div>
+                        <div class="info-row">
+                            <span class="info-label">Amount</span>
+                            <span class="info-value amount">TSh {{ application.amount|floatformat:0 }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">
+                                <span class="status-badge {{ application.status|lower }}">
+                                    <span class="status-dot"></span>
+                                    {{ application.get_status_display }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Purpose</span>
+                            <span class="info-value">{{ application.purpose|default:"-" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Created</span>
+                            <span class="info-value">{{ application.created_at|date:"d M Y H:i" }}</span>
+                        </div>
+                        {% if application.approved_date %}
+                            <div class="info-row">
+                                <span class="info-label">Approved</span>
+                                <span class="info-value">{{ application.approved_date|date:"d M Y H:i" }}</span>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h5>
-                </div>
-                <div class="card-body">
-                    {% if application.status == 'PENDING' %}
-                        <div class="d-grid gap-2">
-                            <form method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="approve">
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="bi bi-check-circle me-1"></i> Approve
-                                </button>
-                            </form>
-                            <form method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="reject">
-                                <div class="mb-2">
-                                    <textarea name="remarks" class="form-control" placeholder="Rejection reason..." rows="2"></textarea>
+                <!-- Farmer Credit Profile -->
+                <div class="card shadow-sm border-0 mt-3">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-person text-success me-2"></i>Farmer Credit Profile
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="credit-score">
+                            <div class="score-circle">
+                                <span class="score-number">{{ farmer.credit_readiness_score }}</span>
+                                <span class="score-label">/ 100</span>
+                            </div>
+                            <div class="score-info">
+                                <span class="score-level {{ eligibility.level|lower }}">
+                                    {{ eligibility.label }}
+                                </span>
+                                <span class="score-recommendation">{{ eligibility.recommendation }}</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-details">
+                            <div class="profile-item">
+                                <span class="profile-label">Farm Size</span>
+                                <span class="profile-value">{{ farmer.farm_size_acres|default:"-" }} acres</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">Primary Crop</span>
+                                <span class="profile-value">{{ farmer.primary_crop|default:"-" }}</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">Years Farming</span>
+                                <span class="profile-value">{{ farmer.years_farming|default:"-" }} years</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">Location</span>
+                                <span class="profile-value">{{ farmer.location_summary|default:"-" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-stats">
+                            <div class="profile-stat">
+                                <span>Orders</span>
+                                <strong>{{ total_orders|default:0 }}</strong>
+                            </div>
+                            <div class="profile-stat">
+                                <span>Order Value</span>
+                                <strong>TSh {{ total_order_value|floatformat:0|default:"0" }}</strong>
+                            </div>
+                            <div class="profile-stat">
+                                <span>Market Activities</span>
+                                <strong>{{ total_market_activities|default:0 }}</strong>
+                            </div>
+                        </div>
+
+                        {% if loan_history %}
+                            <div class="loan-history">
+                                <small class="text-muted">Loan History</small>
+                                <div class="history-badges">
+                                    {% for hist in loan_history|slice:":3" %}
+                                        <span class="history-badge {{ hist.status|lower }}">
+                                            {{ hist.get_status_display }}
+                                        </span>
+                                    {% endfor %}
+                                    {% if loan_history|length > 3 %}
+                                        <span class="history-badge more">+{{ loan_history|length|add:"-3" }}</span>
+                                    {% endif %}
                                 </div>
-                                <button type="submit" class="btn btn-danger w-100">
-                                    <i class="bi bi-x-circle me-1"></i> Reject
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Decision Audit -->
+                {% if audits %}
+                    <div class="card shadow-sm border-0 mt-3">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-clock-history text-success me-2"></i>Decision History
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% for audit in audits|slice:":5" %}
+                                <div class="audit-item">
+                                    <span class="audit-decision {{ audit.decision|lower }}">
+                                        {{ audit.get_decision_display|default:audit.decision }}
+                                    </span>
+                                    <span class="audit-date">{{ audit.created_at|date:"d M Y H:i" }}</span>
+                                    {% if audit.notes %}
+                                        <p class="audit-notes">{{ audit.notes }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <!-- =========================================================
+                 RIGHT COLUMN - Actions & Details
+            ========================================================== -->
+            <div class="col-lg-8">
+
+                <!-- ======================================================
+                     APPLICATION ACTIONS
+                ======================================================= -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-gear text-success me-2"></i>Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+
+                        {% if application.status == 'PENDING' or application.status == 'UNDER_REVIEW' or application.status == 'INFO_REQUIRED' %}
+
+                            <div class="action-grid">
+
+                                <!-- Approve -->
+                                <form method="post" class="action-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <div class="form-group">
+                                        <textarea name="remarks" class="form-control" placeholder="Approval notes..." rows="2"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-circle me-1"></i> Approve
+                                    </button>
+                                </form>
+
+                                <!-- Request Info -->
+                                <form method="post" class="action-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="request_info">
+                                    <div class="form-group">
+                                        <textarea name="remarks" class="form-control" placeholder="What information is needed?" rows="2"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="bi bi-question-circle me-1"></i> Request Info
+                                    </button>
+                                </form>
+
+                                <!-- Reject -->
+                                <form method="post" class="action-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <div class="form-group">
+                                        <textarea name="remarks" class="form-control" placeholder="Rejection reason..." rows="2"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-x-circle me-1"></i> Reject
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        {% elif application.status == 'APPROVED' %}
+
+                            <div class="action-grid single">
+                                <div class="action-info">
+                                    <i class="bi bi-info-circle text-info"></i>
+                                    <span>Loan approved. Farmer must accept terms via USSD before disbursement.</span>
+                                </div>
+                                <button class="btn btn-info" disabled>
+                                    <i class="bi bi-clock me-1"></i> Awaiting Farmer Acceptance
                                 </button>
-                            </form>
+                                <small class="text-muted">SMS sent to farmer with instructions</small>
+                            </div>
+
+                        {% elif application.status == 'FARMER_ACCEPTED' %}
+
+                            <div class="action-grid single">
+                                <div class="action-info success">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    <span>Farmer has accepted the loan terms.</span>
+                                </div>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="disburse">
+                                    <button type="submit" class="btn btn-info">
+                                        <i class="bi bi-cash me-1"></i> Process Disbursement
+                                    </button>
+                                </form>
+                                <small class="text-muted">This will initiate payment via ClickPesa</small>
+                            </div>
+
+                        {% elif application.status == 'DISBURSEMENT_PENDING' %}
+
+                            <div class="action-grid single">
+                                <div class="action-info pending">
+                                    <i class="bi bi-hourglass-split text-warning"></i>
+                                    <span>Disbursement is being processed...</span>
+                                </div>
+                                <div class="disbursement-status">
+                                    <span class="status-badge pending">Pending</span>
+                                    <span class="text-muted small">Waiting for provider confirmation</span>
+                                </div>
+                            </div>
+
+                        {% elif application.status == 'DISBURSED' %}
+
+                            <div class="action-grid single">
+                                <div class="action-info success">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    <span>Loan has been disbursed successfully!</span>
+                                </div>
+                                {% if loan %}
+                                    <a href="{% url 'financial_loan_detail' loan.id %}" class="btn btn-outline-primary">
+                                        <i class="bi bi-eye me-1"></i> View Loan Details
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                        {% elif application.status == 'REJECTED' or application.status == 'FARMER_DECLINED' %}
+
+                            <div class="action-grid single">
+                                <div class="action-info rejected">
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                    <span>Loan application has been rejected.</span>
+                                    {% if application.decision_notes %}
+                                        <p class="rejection-reason"><strong>Reason:</strong> {{ application.decision_notes }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        {% elif application.status == 'REPAID' or application.status == 'FULLY_REPAID' %}
+
+                            <div class="action-grid single">
+                                <div class="action-info success">
+                                    <i class="bi bi-check-all text-success"></i>
+                                    <span>Loan has been fully repaid!</span>
+                                </div>
+                            </div>
+
+                        {% elif application.status == 'DEFAULTED' %}
+
+                            <div class="action-grid single">
+                                <div class="action-info rejected">
+                                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                                    <span>Loan has defaulted.</span>
+                                </div>
+                            </div>
+
+                        {% else %}
+
+                            <div class="action-grid single">
+                                <div class="action-info">
+                                    <i class="bi bi-info-circle text-info"></i>
+                                    <span>No actions available for this status.</span>
+                                </div>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+                </div>
+
+                <!-- ======================================================
+                     LOAN DETAILS (if disbursed)
+                ======================================================= -->
+                {% if loan %}
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-credit-card text-success me-2"></i>Loan Details
+                            </h5>
                         </div>
-                    {% elif application.status == 'APPROVED' %}
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="disburse">
-                            <button type="submit" class="btn btn-info w-100">
-                                <i class="bi bi-cash me-1"></i> Disburse Loan
-                            </button>
-                        </form>
-                    {% elif application.status == 'DISBURSED' %}
-                        <div class="text-center py-3">
-                            <i class="bi bi-check-circle display-4 text-success d-block mb-2"></i>
-                            <p class="text-muted">Loan has been disbursed</p>
-                        </div>
-                    {% elif application.status == 'REJECTED' %}
-                        <div class="text-center py-3">
-                            <i class="bi bi-x-circle display-4 text-danger d-block mb-2"></i>
-                            <p class="text-muted">Application was rejected</p>
-                            {% if application.remarks %}
-                                <p class="text-muted small"><strong>Reason:</strong> {{ application.remarks }}</p>
+                        <div class="card-body">
+                            <div class="loan-summary">
+                                <div class="loan-stat">
+                                    <span class="loan-stat-label">Principal</span>
+                                    <span class="loan-stat-value">TSh {{ loan.principal_amount|floatformat:0 }}</span>
+                                </div>
+                                <div class="loan-stat">
+                                    <span class="loan-stat-label">Interest</span>
+                                    <span class="loan-stat-value">TSh {{ loan.interest_amount|floatformat:0 }}</span>
+                                </div>
+                                <div class="loan-stat">
+                                    <span class="loan-stat-label">Total Payable</span>
+                                    <span class="loan-stat-value">TSh {{ loan.total_payable|floatformat:0 }}</span>
+                                </div>
+                                <div class="loan-stat">
+                                    <span class="loan-stat-label">Outstanding</span>
+                                    <span class="loan-stat-value">TSh {{ loan.outstanding_balance|floatformat:0 }}</span>
+                                </div>
+                            </div>
+
+                            <div class="loan-progress">
+                                <div class="progress-bar-container">
+                                    <div class="progress-label">
+                                        <span>Repayment Progress</span>
+                                        <span>{{ progress|default:0 }}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: {{ progress|default:0 }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Repayment Schedule -->
+                            {% if repayments %}
+                                <div class="repayment-schedule">
+                                    <small class="text-muted">Repayment Schedule</small>
+                                    <div class="table-wrapper-small">
+                                        <table class="repayment-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Due Date</th>
+                                                    <th>Amount</th>
+                                                    <th>Paid</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for r in repayments|slice:":5" %}
+                                                    <tr>
+                                                        <td>{{ r.installment_number }}</td>
+                                                        <td>{{ r.due_date|date:"d M Y" }}</td>
+                                                        <td>TSh {{ r.total_due|floatformat:0 }}</td>
+                                                        <td>TSh {{ r.paid_amount|floatformat:0 }}</td>
+                                                        <td>
+                                                            <span class="status-badge-small {{ r.status|lower }}">
+                                                                {{ r.get_status_display }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        {% if repayments|length > 5 %}
+                                            <div class="text-center mt-2">
+                                                <small class="text-muted">+ {{ repayments|length|add:"-5" }} more installments</small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             {% endif %}
                         </div>
-                    {% endif %}
-                </div>
+                    </div>
+                {% endif %}
+
+                <!-- ======================================================
+                     DISBURSEMENT DETAILS
+                ======================================================= -->
+                {% if disbursement %}
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-cash text-success me-2"></i>Disbursement Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="disbursement-info-grid">
+                                <div class="dinfo-item">
+                                    <span class="dinfo-label">Provider</span>
+                                    <span class="dinfo-value">{{ disbursement.provider }}</span>
+                                </div>
+                                <div class="dinfo-item">
+                                    <span class="dinfo-label">Amount</span>
+                                    <span class="dinfo-value">TSh {{ disbursement.amount|floatformat:0 }}</span>
+                                </div>
+                                <div class="dinfo-item">
+                                    <span class="dinfo-label">Recipient</span>
+                                    <span class="dinfo-value">{{ disbursement.recipient }}</span>
+                                </div>
+                                <div class="dinfo-item">
+                                    <span class="dinfo-label">Status</span>
+                                    <span class="status-badge-small {{ disbursement.status|lower }}">
+                                        {{ disbursement.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="dinfo-item">
+                                    <span class="dinfo-label">Reference</span>
+                                    <span class="dinfo-value">{{ disbursement.provider_reference|default:"-" }}</span>
+                                </div>
+                                <div class="dinfo-item">
+                                    <span class="dinfo-label">Requested</span>
+                                    <span class="dinfo-value">{{ disbursement.requested_at|date:"d M Y H:i" }}</span>
+                                </div>
+                                {% if disbursement.failure_reason %}
+                                    <div class="dinfo-item full">
+                                        <span class="dinfo-label">Failure Reason</span>
+                                        <span class="dinfo-value text-danger">{{ disbursement.failure_reason }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
             </div>
+
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   FINANCIAL APPLICATION DETAIL - COMPLETE STYLES
+============================================================ */
+
+.financial-application-detail {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Header */
+.dashboard-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-top: 20px;
+}
+
+.dashboard-header-compact .welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.dashboard-header-compact .welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-header-compact .dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-header-compact .dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-header-compact .dashboard-subtitle .separator {
+    margin: 0 8px;
+    color: #dee2e6;
+}
+
+.dashboard-header-compact .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.dashboard-header-compact .dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.dashboard-header-compact .dashboard-action.secondary {
+    color: #315dcb;
+    border: 1px solid #d9e1f5;
+    background: #fff;
+}
+
+.dashboard-header-compact .dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid #edf0ee;
+    padding: 1.1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Info Rows */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f2f1;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #8a948e;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.info-value {
+    color: #1c3326;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: right;
+}
+
+.info-value.app-id {
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: #8a948e;
+}
+
+.info-value.amount {
+    color: #1a6e3e;
+    font-weight: 700;
+}
+
+/* Type Badge */
+.type-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.type-badge.input { color: #177a43; background: #e7f6ec; }
+.type-badge.production { color: #2869d6; background: #edf3ff; }
+.type-badge.market { color: #a96d00; background: #fff5dc; }
+.type-badge.general { color: #6c7a72; background: #f0f2f1; }
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: .7rem;
+    font-weight: 700;
+}
+
+.status-badge.pending { color: #a96d00; background: #fff5dc; }
+.status-badge.under_review { color: #2869d6; background: #edf3ff; }
+.status-badge.info_required { color: #c88616; background: #fff5df; }
+.status-badge.approved { color: #177a43; background: #e7f6ec; }
+.status-badge.farmer_accepted { color: #177a43; background: #e7f6ec; }
+.status-badge.disbursement_pending { color: #087e9d; background: #e3f7fc; }
+.status-badge.disbursed { color: #087e9d; background: #e3f7fc; }
+.status-badge.rejected { color: #b32121; background: #fde8e8; }
+.status-badge.repaid { color: #177a43; background: #e7f6ec; }
+.status-badge.defaulted { color: #b32121; background: #fde8e8; }
+.status-badge.active { color: #177a43; background: #e7f6ec; }
+.status-badge.overdue { color: #b32121; background: #fde8e8; }
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Credit Score */
+.credit-score {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f2f1;
+    margin-bottom: 16px;
+}
+
+.score-circle {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8f5eb, #d0ebd8);
+    flex-shrink: 0;
+}
+
+.score-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1a6e3e;
+    line-height: 1;
+}
+
+.score-label {
+    font-size: 0.6rem;
+    color: #8a948e;
+}
+
+.score-info {
+    flex: 1;
+}
+
+.score-level {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.score-level.very_strong { color: #177a43; }
+.score-level.strong { color: #21874b; }
+.score-level.moderate { color: #a96d00; }
+.score-level.limited { color: #c88616; }
+.score-level.incomplete { color: #8a948e; }
+
+.score-recommendation {
+    display: block;
+    font-size: 0.7rem;
+    color: #8a948e;
+    margin-top: 2px;
+}
+
+/* Profile Details */
+.profile-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+    margin-bottom: 16px;
+}
+
+.profile-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #f5f7f6;
+}
+
+.profile-label {
+    font-size: 0.65rem;
+    color: #8a948e;
+}
+
+.profile-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1c3326;
+}
+
+/* Profile Stats */
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 12px;
+    background: #f8fbf9;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.profile-stat {
+    text-align: center;
+}
+
+.profile-stat span {
+    display: block;
+    font-size: 0.6rem;
+    color: #8a948e;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.profile-stat strong {
+    display: block;
+    font-size: 0.9rem;
+    color: #1c3326;
+}
+
+/* Loan History */
+.loan-history {
+    padding-top: 12px;
+    border-top: 1px solid #f0f2f1;
+}
+
+.loan-history small {
+    display: block;
+    font-size: 0.65rem;
+    margin-bottom: 6px;
+}
+
+.history-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.history-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 600;
+}
+
+.history-badge.pending { color: #a96d00; background: #fff5dc; }
+.history-badge.approved { color: #177a43; background: #e7f6ec; }
+.history-badge.disbursed { color: #087e9d; background: #e3f7fc; }
+.history-badge.rejected { color: #b32121; background: #fde8e8; }
+.history-badge.repaid { color: #177a43; background: #e7f6ec; }
+.history-badge.defaulted { color: #b32121; background: #fde8e8; }
+.history-badge.more { color: #8a948e; background: #f0f2f1; }
+
+/* Audit */
+.audit-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f2f1;
+}
+
+.audit-item:last-child {
+    border-bottom: none;
+}
+
+.audit-decision {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.audit-decision.approved { color: #177a43; background: #e7f6ec; }
+.audit-decision.rejected { color: #b32121; background: #fde8e8; }
+.audit-decision.info_required { color: #c88616; background: #fff5df; }
+
+.audit-date {
+    font-size: 0.6rem;
+    color: #8a948e;
+    margin-left: 8px;
+}
+
+.audit-notes {
+    font-size: 0.72rem;
+    color: #6c7a72;
+    margin: 4px 0 0 0;
+}
+
+/* Actions */
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.action-grid.single {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+}
+
+.action-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.action-form .form-group {
+    flex: 1;
+}
+
+.action-form .form-control {
+    border-radius: 8px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.78rem;
+    width: 100%;
+}
+
+.action-form .form-control:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.1);
+}
+
+.action-form .btn {
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.5rem 1.2rem;
+    min-height: 40px;
+}
+
+.action-form .btn-success {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.action-form .btn-success:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+}
+
+.action-form .btn-warning {
+    background: #ffc107;
+    border: none;
+    color: #212529;
+}
+
+.action-form .btn-warning:hover {
+    background: #e0a800;
+}
+
+.action-form .btn-danger {
+    background: #dc3545;
+    border: none;
+    color: #fff;
+}
+
+.action-form .btn-danger:hover {
+    background: #c82333;
+}
+
+.action-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f0f7fa;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: #1c3326;
+}
+
+.action-info.success {
+    background: #e7f6ec;
+}
+
+.action-info.pending {
+    background: #fff5dc;
+}
+
+.action-info.rejected {
+    background: #fde8e8;
+}
+
+.action-info .rejection-reason {
+    margin: 8px 0 0 30px;
+    font-size: 0.8rem;
+    color: #6c7a72;
+}
+
+.disbursement-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-info {
+    background: #17a2b8;
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.5rem 1.2rem;
+    min-height: 40px;
+}
+
+.btn-info:hover {
+    background: #138496;
+}
+
+.btn-outline-primary {
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+/* Loan Summary */
+.loan-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.loan-stat {
+    text-align: center;
+    padding: 12px;
+    background: #f8fbf9;
+    border-radius: 10px;
+}
+
+.loan-stat-label {
+    display: block;
+    font-size: 0.6rem;
+    color: #8a948e;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.loan-stat-value {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1c3326;
+}
+
+/* Progress Bar */
+.loan-progress {
+    margin-bottom: 16px;
+}
+
+.progress-bar-container {
+    padding: 8px 0;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #8a948e;
+    margin-bottom: 4px;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background: #f0f2f1;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #1a6e3e, #2d8f4e);
+    transition: width 0.6s ease;
+}
+
+/* Repayment Table */
+.repayment-schedule {
+    padding-top: 12px;
+    border-top: 1px solid #f0f2f1;
+}
+
+.repayment-schedule small {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.repayment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.repayment-table th {
+    padding: 6px 8px;
+    color: #8a948e;
+    font-weight: 700;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.repayment-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0f2f1;
+    color: #526159;
+}
+
+.repayment-table tr:last-child td {
+    border-bottom: none;
+}
+
+.status-badge-small {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+.status-badge-small.upcoming { color: #8a948e; background: #f0f2f1; }
+.status-badge-small.due { color: #a96d00; background: #fff5dc; }
+.status-badge-small.partially_paid { color: #c88616; background: #fff5df; }
+.status-badge-small.paid { color: #177a43; background: #e7f6ec; }
+.status-badge-small.overdue { color: #b32121; background: #fde8e8; }
+
+/* Disbursement Info */
+.disbursement-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+}
+
+.dinfo-item {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 0;
+    border-bottom: 1px solid #f5f7f6;
+}
+
+.dinfo-item.full {
+    grid-column: 1 / -1;
+}
+
+.dinfo-label {
+    font-size: 0.6rem;
+    color: #8a948e;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.dinfo-value {
+    font-size: 0.8rem;
+    color: #1c3326;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .loan-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .action-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .disbursement-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .financial-application-detail {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header-compact {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .dashboard-header-compact .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .dashboard-header-compact .header-actions {
+        width: 100%;
+    }
+
+    .dashboard-header-compact .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+    }
+    .info-value {
+        text-align: left;
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-form .btn {
+        width: 100%;
+    }
+
+    .credit-score {
+        flex-direction: column;
+        text-align: center;
+    }
+    .score-circle {
+        margin: 0 auto;
+    }
+
+    .profile-details {
+        grid-template-columns: 1fr;
+    }
+    .profile-stats {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .loan-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .disbursement-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .repayment-table {
+        font-size: 0.65rem;
+    }
+    .repayment-table th,
+    .repayment-table td {
+        padding: 4px 6px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-header-compact .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .dashboard-header-compact .dashboard-subtitle {
+        font-size: 0.75rem;
+    }
+
+    .profile-stats {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .loan-summary {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .loan-stat {
+        padding: 8px;
+    }
+    .loan-stat-value {
+        font-size: 0.8rem;
+    }
+}
+</style>
 {% endblock %}

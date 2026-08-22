@@ -1,112 +1,894 @@
+<!-- templates/financial/applications.html -->
 {% extends 'base.html' %}
 
 {% block title %}Loan Applications - Financial Institution{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+
+<div class="financial-applications">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+        <!-- =========================================================
+             HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header">
+
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Loan Applications
+                </div>
+                <h1 class="dashboard-title">
+                    Loan Applications
+                </h1>
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-file-earmark-text me-1"></i>
+                    Manage loan applications from farmers
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a href="{% url 'financial_dashboard' %}" class="dashboard-action secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- =========================================================
+             FILTERS
+        ========================================================== -->
+
+        <div class="filter-section">
+
+            <form method="get" class="filter-form">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            {% for status_code, status_label in status_counts.items %}
+                                <option value="{{ status_code }}" {% if status == status_code %}selected{% endif %}>
+                                    {{ status_label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Loan Type</label>
+                        <select name="loan_type" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="INPUT" {% if loan_type == 'INPUT' %}selected{% endif %}>Mkopo wa Pembejeo</option>
+                            <option value="PRODUCTION" {% if loan_type == 'PRODUCTION' %}selected{% endif %}>Mkopo wa Uzalishaji</option>
+                            <option value="MARKET" {% if loan_type == 'MARKET' %}selected{% endif %}>Mkopo wa Biashara</option>
+                            <option value="GENERAL" {% if loan_type == 'GENERAL' %}selected{% endif %}>Mkopo wa Jumla</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Name, phone, ID..." value="{{ search }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">From</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">To</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                        <a href="{% url 'financial_applications' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Quick Status Filters -->
+            <div class="status-pills">
+                <a href="?status=PENDING" class="status-pill pending {% if status == 'PENDING' %}active{% endif %}">
+                    Pending <span class="badge">{{ status_counts.PENDING|default:0 }}</span>
+                </a>
+                <a href="?status=UNDER_REVIEW" class="status-pill review {% if status == 'UNDER_REVIEW' %}active{% endif %}">
+                    Under Review <span class="badge">{{ status_counts.UNDER_REVIEW|default:0 }}</span>
+                </a>
+                <a href="?status=APPROVED" class="status-pill approved {% if status == 'APPROVED' %}active{% endif %}">
+                    Approved <span class="badge">{{ status_counts.APPROVED|default:0 }}</span>
+                </a>
+                <a href="?status=DISBURSED" class="status-pill disbursed {% if status == 'DISBURSED' %}active{% endif %}">
+                    Disbursed <span class="badge">{{ status_counts.DISBURSED|default:0 }}</span>
+                </a>
+                <a href="?status=REJECTED" class="status-pill rejected {% if status == 'REJECTED' %}active{% endif %}">
+                    Rejected <span class="badge">{{ status_counts.REJECTED|default:0 }}</span>
+                </a>
+                <a href="?status=DEFAULTED" class="status-pill defaulted {% if status == 'DEFAULTED' %}active{% endif %}">
+                    Defaulted <span class="badge">{{ status_counts.DEFAULTED|default:0 }}</span>
+                </a>
+                <a href="?status=REPAID" class="status-pill repaid {% if status == 'REPAID' %}active{% endif %}">
+                    Repaid <span class="badge">{{ status_counts.REPAID|default:0 }}</span>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- =========================================================
+             TABLE
+        ========================================================== -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
                 <div>
-                    <h2 class="mb-1"><i class="bi bi-file-earmark-text text-success me-2"></i>Loan Applications</h2>
-                    <p class="text-muted">Manage loan applications</p>
+                    <div class="panel-title">
+                        <span class="panel-title-icon">
+                            <i class="bi bi-list-ul"></i>
+                        </span>
+                        All Applications
+                    </div>
+                    <p class="panel-subtitle">
+                        {% if applications %}
+                            Showing {{ applications|length }} of {{ applications.paginator.count }} applications
+                        {% else %}
+                            No applications found
+                        {% endif %}
+                    </p>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Status Filters -->
-    <div class="row mb-3">
-        <div class="col-12">
-            <div class="btn-group flex-wrap gap-1">
-                <a href="{% url 'financial_applications' %}" class="btn btn-outline-primary {% if not status %}active{% endif %}">
-                    All ({{ status_counts.PENDING|add:status_counts.APPROVED|add:status_counts.DISBURSED|add:status_counts.REJECTED }})
-                </a>
-                <a href="?status=PENDING" class="btn btn-outline-warning {% if status == 'PENDING' %}active{% endif %}">
-                    Pending ({{ status_counts.PENDING }})
-                </a>
-                <a href="?status=APPROVED" class="btn btn-outline-success {% if status == 'APPROVED' %}active{% endif %}">
-                    Approved ({{ status_counts.APPROVED }})
-                </a>
-                <a href="?status=DISBURSED" class="btn btn-outline-info {% if status == 'DISBURSED' %}active{% endif %}">
-                    Disbursed ({{ status_counts.DISBURSED }})
-                </a>
-                <a href="?status=REJECTED" class="btn btn-outline-danger {% if status == 'REJECTED' %}active{% endif %}">
-                    Rejected ({{ status_counts.REJECTED }})
-                </a>
-            </div>
-        </div>
-    </div>
+            <div class="panel-body">
 
-    <!-- Applications Table -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-            {% if applications %}
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Farmer</th>
-                                <th>Product</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for app in applications %}
+                {% if applications %}
+
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
-                                    <td>{{ app.farmer.full_name|default:"-" }}</td>
-                                    <td>{{ app.loan_product.name|default:"-" }}</td>
-                                    <td>TSh {{ app.amount|floatformat:0 }}</td>
-                                    <td>
-                                        <span class="badge {% if app.status == 'PENDING' %}bg-warning{% elif app.status == 'APPROVED' %}bg-success{% elif app.status == 'DISBURSED' %}bg-info{% elif app.status == 'REJECTED' %}bg-danger{% else %}bg-secondary{% endif %}">
-                                            {{ app.get_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>{{ app.created_at|date:"d M Y" }}</td>
-                                    <td>
-                                        <a href="{% url 'financial_application_detail' app.id %}" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
+                                    <th>ID</th>
+                                    <th>Farmer</th>
+                                    <th>Product</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                    <tr>
+                                        <td>
+                                            <span class="app-id">#{{ app.id|slice:"-8" }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="farmer-cell">
+                                                <div class="farmer-avatar">
+                                                    <i class="bi bi-person-fill"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="farmer-name">{{ app.farmer.full_name|default:"-" }}</span>
+                                                    <span class="farmer-phone">{{ app.farmer.phone_number }}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="product-name">{{ app.loan_product.name|default:"-" }}</span>
+                                            <span class="product-type">{{ app.loan_product.get_loan_type_display|default:"" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="amount">TSh {{ app.amount|floatformat:0 }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge {{ app.status|lower }}">
+                                                <span class="status-dot"></span>
+                                                {{ app.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="date-text">{{ app.created_at|date:"d M Y" }}</span>
+                                            <span class="time-text">{{ app.created_at|time:"H:i" }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'financial_application_detail' app.id %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Pagination -->
-                {% if applications.has_other_pages %}
-                    <nav class="mt-3">
-                        <ul class="pagination justify-content-center">
-                            {% if applications.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ applications.previous_page_number }}{% if status %}&status={{ status }}{% endif %}">Previous</a>
-                                </li>
-                            {% endif %}
-                            {% for num in applications.paginator.page_range %}
-                                <li class="page-item {% if applications.number == num %}active{% endif %}">
-                                    <a class="page-link" href="?page={{ num }}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
-                                </li>
-                            {% endfor %}
-                            {% if applications.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ applications.next_page_number }}{% if status %}&status={{ status }}{% endif %}">Next</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
+                    <!-- Pagination -->
+                    {% if applications.has_other_pages %}
+                        <div class="pagination-wrapper">
+                            <nav>
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if applications.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ applications.previous_page_number }}{% if status %}&status={{ status }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                                                <i class="bi bi-chevron-left"></i> Previous
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in applications.paginator.page_range %}
+                                        <li class="page-item {% if applications.number == num %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ num }}{% if status %}&status={{ status }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+
+                                    {% if applications.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ applications.next_page_number }}{% if status %}&status={{ status }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                                                Next <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+
+                {% else %}
+
+                    <!-- Empty State -->
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-inbox"></i>
+                        </div>
+                        <h5>No loan applications</h5>
+                        <p>
+                            Loan applications from farmers will appear here.
+                            Create loan products to start receiving applications.
+                        </p>
+                        <a href="{% url 'financial_loan_product_create' %}" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-1"></i> Add Loan Product
+                        </a>
+                    </div>
+
                 {% endif %}
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-inbox display-1 text-muted d-block mb-3"></i>
-                    <h5 class="text-muted">No loan applications</h5>
-                    <p class="text-muted small">Applications will appear here.</p>
-                </div>
-            {% endif %}
+
+            </div>
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   FINANCIAL APPLICATIONS - COMPLETE STYLES
+============================================================ */
+
+.financial-applications {
+    min-height: calc(100vh - 76px);
+    padding: 0;
+    background: #f5f8f6;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-subtitle i {
+    color: #21874b;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.dashboard-action.secondary {
+    color: #315dcb;
+    border: 1px solid #d9e1f5;
+    background: #fff;
+}
+
+.dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: 22px;
+}
+
+.filter-form {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(27,67,43,.04);
+    margin-bottom: 14px;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group:first-child {
+    min-width: 130px;
+}
+
+.filter-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #8a948e;
+    margin-bottom: 3px;
+    letter-spacing: .3px;
+}
+
+.filter-group .form-control,
+.filter-group .form-select {
+    border-radius: 8px;
+    border: 1.5px solid #dee2e6;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.8rem;
+    background: #fff;
+    color: #1c3326;
+    width: 100%;
+}
+
+.filter-group .form-control:focus,
+.filter-group .form-select:focus {
+    border-color: #2d8f4e;
+    box-shadow: 0 0 0 0.2rem rgba(45,143,78,0.1);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.filter-actions .btn {
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.45rem 1.2rem;
+    min-height: 38px;
+}
+
+.filter-actions .btn-primary {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border: none;
+    color: #fff;
+}
+
+.filter-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #0f4a2a, #1a6e3e);
+}
+
+.filter-actions .btn-secondary {
+    background: #eef1ef;
+    border: none;
+    color: #405047;
+}
+
+.filter-actions .btn-secondary:hover {
+    background: #dce1dd;
+}
+
+/* Status Pills */
+.status-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1.5px solid #dee2e6;
+    background: #fff;
+    color: #6c7a72;
+    transition: all .2s ease;
+}
+
+.status-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.status-pill .badge {
+    font-size: 0.6rem;
+    padding: 2px 7px;
+    border-radius: 50px;
+    background: #f0f2f1;
+    color: #6c7a72;
+}
+
+.status-pill.pending { border-color: #fff5dc; }
+.status-pill.pending.active { background: #fff5dc; color: #a96d00; }
+
+.status-pill.review { border-color: #edf3ff; }
+.status-pill.review.active { background: #edf3ff; color: #2869d6; }
+
+.status-pill.approved { border-color: #e7f6ec; }
+.status-pill.approved.active { background: #e7f6ec; color: #177a43; }
+
+.status-pill.disbursed { border-color: #e3f7fc; }
+.status-pill.disbursed.active { background: #e3f7fc; color: #087e9d; }
+
+.status-pill.rejected { border-color: #fde8e8; }
+.status-pill.rejected.active { background: #fde8e8; color: #b32121; }
+
+.status-pill.defaulted { border-color: #fde8e8; }
+.status-pill.defaulted.active { background: #fde8e8; color: #b32121; }
+
+.status-pill.repaid { border-color: #e7f6ec; }
+.status-pill.repaid.active { background: #e7f6ec; color: #177a43; }
+
+/* Panel */
+.dashboard-panel {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 19px 21px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #1c3326;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.panel-title-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: #21874b;
+    background: #e9f6ed;
+    font-size: .82rem;
+}
+
+.panel-subtitle {
+    margin: 4px 0 0 41px;
+    color: #9aa39e;
+    font-size: .68rem;
+}
+
+.panel-body {
+    padding: 0;
+}
+
+/* Table */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.data-table th {
+    padding: 12px 16px;
+    color: #8a948e;
+    background: #fafcfb;
+    border-bottom: 1px solid #edf0ee;
+    font-size: .62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f2f1;
+    color: #526159;
+    font-size: .74rem;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fcfa;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.app-id {
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: #8a948e;
+}
+
+.farmer-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.farmer-avatar {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #21874b;
+    background: #e8f5eb;
+    font-size: .75rem;
+    flex-shrink: 0;
+}
+
+.farmer-name {
+    display: block;
+    font-weight: 600;
+    color: #1c3326;
+    font-size: 0.8rem;
+}
+
+.farmer-phone {
+    display: block;
+    font-size: 0.68rem;
+    color: #8a948e;
+}
+
+.product-name {
+    display: block;
+    font-weight: 600;
+    color: #1c3326;
+    font-size: 0.78rem;
+}
+
+.product-type {
+    display: block;
+    font-size: 0.62rem;
+    color: #8a948e;
+}
+
+.amount {
+    font-weight: 700;
+    color: #1c3326;
+    white-space: nowrap;
+    font-size: 0.82rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: .63rem;
+    font-weight: 700;
+}
+
+.status-badge.pending { color: #a96d00; background: #fff5dc; }
+.status-badge.under_review { color: #2869d6; background: #edf3ff; }
+.status-badge.info_required { color: #c88616; background: #fff5df; }
+.status-badge.approved { color: #177a43; background: #e7f6ec; }
+.status-badge.farmer_accepted { color: #177a43; background: #e7f6ec; }
+.status-badge.disbursement_pending { color: #087e9d; background: #e3f7fc; }
+.status-badge.disbursed { color: #087e9d; background: #e3f7fc; }
+.status-badge.rejected { color: #b32121; background: #fde8e8; }
+.status-badge.repaid { color: #177a43; background: #e7f6ec; }
+.status-badge.defaulted { color: #b32121; background: #fde8e8; }
+.status-badge.active { color: #177a43; background: #e7f6ec; }
+.status-badge.overdue { color: #b32121; background: #fde8e8; }
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.date-text {
+    display: block;
+    color: #1c3326;
+    font-size: 0.72rem;
+}
+
+.time-text {
+    display: block;
+    font-size: 0.6rem;
+    color: #8a948e;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.action-buttons .btn {
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-width: 1.5px;
+}
+
+.action-buttons .btn-outline-primary:hover {
+    background: #0d6efd;
+    color: #fff;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    padding: 16px 21px;
+    border-top: 1px solid #edf0ee;
+}
+
+.pagination {
+    gap: 3px;
+}
+
+.pagination .page-link {
+    border: 1.5px solid #dee2e6;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6c7a72;
+    background: #fff;
+}
+
+.pagination .page-link:hover {
+    background: #f0f7f0;
+    border-color: #2d8f4e;
+    color: #1a6e3e;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    border-color: #1a6e3e;
+    color: #fff;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 65px 25px;
+}
+
+.empty-icon {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    border-radius: 18px;
+    color: #8d9991;
+    background: #f1f4f2;
+    font-size: 1.8rem;
+}
+
+.empty-state h5 {
+    color: #4d5d54;
+    font-size: .95rem;
+    font-weight: 800;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    color: #9aa39e;
+    font-size: .76rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .filter-group {
+        min-width: 130px;
+    }
+    .filter-actions {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .financial-applications {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+        margin-bottom: 22px;
+    }
+
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .filter-row {
+        flex-direction: column;
+    }
+    .filter-group {
+        min-width: 100%;
+    }
+    .filter-actions {
+        flex-direction: row;
+    }
+    .filter-actions .btn {
+        flex: 1;
+    }
+
+    .panel-header {
+        padding: 15px;
+    }
+
+    .panel-subtitle {
+        margin-left: 0;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.68rem;
+    }
+
+    .action-buttons .btn {
+        padding: 3px 6px;
+        font-size: 0.65rem;
+    }
+
+    .status-pills {
+        gap: 4px;
+    }
+    .status-pill {
+        font-size: 0.65rem;
+        padding: 4px 10px;
+    }
+
+    .empty-state {
+        padding: 40px 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .data-table {
+        min-width: 700px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+        font-size: 0.65rem;
+    }
+
+    .status-badge {
+        font-size: 0.55rem;
+        padding: 3px 7px;
+    }
+
+    .action-buttons {
+        gap: 2px;
+    }
+    .action-buttons .btn {
+        padding: 2px 5px;
+        font-size: 0.6rem;
+    }
+
+    .status-pill {
+        font-size: 0.6rem;
+        padding: 3px 8px;
+    }
+}
+</style>
 {% endblock %}

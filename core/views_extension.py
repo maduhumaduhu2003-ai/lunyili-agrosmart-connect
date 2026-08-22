@@ -13,7 +13,8 @@ from .forms import ExtensionOfficerProfileForm, AdviceForm
 
 @login_required
 def extension_profile_create(request):
-    """Create extension officer profile"""
+    """Create extension officer profile - auto-fill from User"""
+    
     if ExtensionOfficer.objects.filter(user=request.user).exists():
         messages.info(request, "You already have an extension officer profile.")
         return redirect('extension_dashboard')
@@ -31,7 +32,11 @@ def extension_profile_create(request):
     else:
         form = ExtensionOfficerProfileForm()
     
-    return render(request, 'extension/profile_create.html', {'form': form})
+    context = {
+        'form': form,
+        'user': request.user,
+    }
+    return render(request, 'extension/profile_create.html', context)
 
 
 @login_required

@@ -1,203 +1,614 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}{{ action }} Product - Supplier{% endblock %}
+{% block title %}{{ action }} Product - AgroSimple{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1"><i class="bi bi-box text-success"></i> {{ action }} Product</h2>
-                    <p class="text-muted">{% if action == 'Create' %}Add a new product to your catalog{% else %}Update product information{% endif %}</p>
+
+<div class="container-fluid supplier-page px-3 px-md-4 py-4">
+
+    <!-- HEADER -->
+
+    <div class="page-header mb-4">
+
+        <div>
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="page-icon">
+                    <i class="bi bi-box"></i>
                 </div>
-                <a href="{% url 'supplier_products' %}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Products
-                </a>
+
+                <div>
+
+                    <h2 class="fw-bold mb-1">
+                        {{ action }} Product
+                    </h2>
+
+                    <p class="text-muted mb-0">
+
+                        {% if action == 'Create' %}
+                            Add a new product to your catalog.
+                        {% else %}
+                            Update your product information.
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
             </div>
+
         </div>
+
+
+        <a
+            href="{% url 'supplier_products' %}"
+            class="btn btn-outline-secondary"
+        >
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Products
+        </a>
+
     </div>
 
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Product Information</h5>
+    <hr>
+
+
+    <div class="row g-4">
+
+        <!-- FORM -->
+
+        <div class="col-xl-8">
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-pencil-square text-success me-2"></i>
+                        Product Information
+                    </h5>
+
                 </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data" novalidate>
+
+
+                <div class="card-body p-4">
+
+                    <form
+                        method="post"
+                        enctype="multipart/form-data"
+                        novalidate
+                        data-loading="true"
+                        data-loading-title="Saving Product"
+                        data-loading-message="Uploading product information..."
+                    >
+
                         {% csrf_token %}
-                        
-                        <!-- Category -->
-                        <div class="mb-3">
-                            <label for="{{ form.category.id_for_label }}" class="form-label">
-                                Category <span class="text-danger">*</span>
+
+
+                        <!-- CATEGORY -->
+
+                        <div class="mb-4">
+
+                            <label
+                                for="{{ form.category.id_for_label }}"
+                                class="form-label"
+                            >
+                                Category
+                                <span class="text-danger">*</span>
                             </label>
+
                             {{ form.category }}
+
                             {% if form.category.errors %}
-                                <div class="text-danger small mt-1">{{ form.category.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">Select the category for this product</small>
-                        </div>
-                        
-                        <!-- Product Name -->
-                        <div class="mb-3">
-                            <label for="{{ form.name.id_for_label }}" class="form-label">
-                                Product Name <span class="text-danger">*</span>
-                            </label>
-                            {{ form.name }}
-                            {% if form.name.errors %}
-                                <div class="text-danger small mt-1">{{ form.name.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Description -->
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
-                            {{ form.description }}
-                            {% if form.description.errors %}
-                                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">Provide a detailed description of the product</small>
-                        </div>
-                        
-                        <div class="row">
-                            <!-- Price -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.price.id_for_label }}" class="form-label">
-                                    Price (TSh) <span class="text-danger">*</span>
-                                </label>
-                                {{ form.price }}
-                                {% if form.price.errors %}
-                                    <div class="text-danger small mt-1">{{ form.price.errors }}</div>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Stock -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.stock.id_for_label }}" class="form-label">
-                                    Stock Quantity <span class="text-danger">*</span>
-                                </label>
-                                {{ form.stock }}
-                                {% if form.stock.errors %}
-                                    <div class="text-danger small mt-1">{{ form.stock.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Unit -->
-                        <div class="mb-3">
-                            <label for="{{ form.unit.id_for_label }}" class="form-label">Unit</label>
-                            {{ form.unit }}
-                            {% if form.unit.errors %}
-                                <div class="text-danger small mt-1">{{ form.unit.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">e.g., kg, piece, bag, litre</small>
-                        </div>
-                        
-                        <!-- Product Image -->
-                        <div class="mb-3">
-                            <label for="{{ form.image.id_for_label }}" class="form-label">Product Image</label>
-                            {% if product and product.image %}
-                                <div class="mb-2">
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" 
-                                         style="max-width: 150px; max-height: 150px; border-radius: 5px;">
+                                <div class="text-danger small mt-1">
+                                    {{ form.category.errors }}
                                 </div>
                             {% endif %}
-                            {{ form.image }}
-                            {% if form.image.errors %}
-                                <div class="text-danger small mt-1">{{ form.image.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">Upload a product image (JPG, PNG, or GIF)</small>
+
+                            <div class="form-help">
+                                Select the category that best describes this product.
+                            </div>
+
                         </div>
-                        
-                        <!-- Availability -->
+
+
+                        <!-- NAME -->
+
                         <div class="mb-4">
+
+                            <label
+                                for="{{ form.name.id_for_label }}"
+                                class="form-label"
+                            >
+                                Product Name
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            {{ form.name }}
+
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.name.errors }}
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- DESCRIPTION -->
+
+                        <div class="mb-4">
+
+                            <label
+                                for="{{ form.description.id_for_label }}"
+                                class="form-label"
+                            >
+                                Description
+                            </label>
+
+                            {{ form.description }}
+
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.description.errors }}
+                                </div>
+                            {% endif %}
+
+                            <div class="form-help">
+                                Describe the product, quality, usage and other important information.
+                            </div>
+
+                        </div>
+
+
+                        <!-- PRICE / STOCK -->
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-4">
+
+                                <label
+                                    for="{{ form.price.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Price (TSh)
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                {{ form.price }}
+
+                                {% if form.price.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.price.errors }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="col-md-6 mb-4">
+
+                                <label
+                                    for="{{ form.stock.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Stock Quantity
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                {{ form.stock }}
+
+                                {% if form.stock.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.stock.errors }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- UNIT -->
+
+                        <div class="mb-4">
+
+                            <label
+                                for="{{ form.unit.id_for_label }}"
+                                class="form-label"
+                            >
+                                Unit
+                            </label>
+
+                            {{ form.unit }}
+
+                            {% if form.unit.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.unit.errors }}
+                                </div>
+                            {% endif %}
+
+                            <div class="form-help">
+                                Examples: kg, bag, piece, litre, crate.
+                            </div>
+
+                        </div>
+
+
+                        <!-- IMAGE -->
+
+                        <div class="mb-4">
+
+                            <label
+                                for="{{ form.image.id_for_label }}"
+                                class="form-label"
+                            >
+                                Product Image
+                            </label>
+
+
+                            {% if product and product.image %}
+
+                                <div class="current-image mb-3">
+
+                                    <img
+                                        src="{{ product.image.url }}"
+                                        alt="{{ product.name }}"
+                                    >
+
+                                    <div>
+                                        <small class="text-muted">
+                                            Current product image
+                                        </small>
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="image-upload">
+
+                                {{ form.image }}
+
+                            </div>
+
+
+                            {% if form.image.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.image.errors }}
+                                </div>
+                            {% endif %}
+
+                            <div class="form-help">
+                                JPG, PNG or GIF. Use a clear image of your product.
+                            </div>
+
+                        </div>
+
+
+                        <!-- AVAILABLE -->
+
+                        <div class="availability-box mb-4">
+
                             <div class="form-check">
+
                                 {{ form.is_available }}
-                                <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+
+                                <label
+                                    class="form-check-label fw-semibold"
+                                    for="{{ form.is_available.id_for_label }}"
+                                >
                                     Product is available for sale
                                 </label>
+
                             </div>
+
                             {% if form.is_available.errors %}
-                                <div class="text-danger small mt-1">{{ form.is_available.errors }}</div>
+                                <div class="text-danger small mt-1">
+                                    {{ form.is_available.errors }}
+                                </div>
                             {% endif %}
+
                         </div>
-                        
-                        <!-- Form Actions -->
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> 
-                                {% if action == 'Create' %}Create Product{% else %}Update Product{% endif %}
+
+
+                        <!-- ACTIONS -->
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-success px-4"
+                            >
+                                <i class="bi bi-check-circle me-1"></i>
+
+                                {% if action == 'Create' %}
+                                    Create Product
+                                {% else %}
+                                    Update Product
+                                {% endif %}
+
                             </button>
-                            <a href="{% url 'supplier_products' %}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle"></i> Cancel
+
+
+                            <a
+                                href="{% url 'supplier_products' %}"
+                                class="btn btn-outline-secondary px-4"
+                            >
+                                <i class="bi bi-x-circle me-1"></i>
+                                Cancel
                             </a>
+
                         </div>
+
                     </form>
+
                 </div>
+
             </div>
+
         </div>
-        
-        <!-- Sidebar - Tips -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm mb-3">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-lightbulb text-warning"></i> Tips</h5>
+
+
+        <!-- SIDEBAR -->
+
+        <div class="col-xl-4">
+
+            <!-- TIPS -->
+
+            <div class="card mb-4">
+
+                <div class="card-header">
+
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                        Product Tips
+                    </h5>
+
                 </div>
+
                 <div class="card-body">
-                    <div class="mb-3">
-                        <h6 class="fw-bold">Product Name</h6>
-                        <p class="text-muted small">Use clear and descriptive names that farmers can easily recognize.</p>
+
+                    <div class="tip">
+
+                        <div class="tip-icon">
+                            <i class="bi bi-tag"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Product Name</strong>
+
+                            <p>
+                                Use a clear and descriptive name that farmers
+                                can easily understand.
+                            </p>
+
+                        </div>
+
                     </div>
-                    <div class="mb-3">
-                        <h6 class="fw-bold">Price</h6>
-                        <p class="text-muted small">Set competitive prices. Check market prices before listing.</p>
+
+
+                    <div class="tip">
+
+                        <div class="tip-icon">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Price</strong>
+
+                            <p>
+                                Check market prices and keep your pricing competitive.
+                            </p>
+
+                        </div>
+
                     </div>
-                    <div class="mb-3">
-                        <h6 class="fw-bold">Stock</h6>
-                        <p class="text-muted small">Keep stock updated to avoid disappointing customers.</p>
+
+
+                    <div class="tip">
+
+                        <div class="tip-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Stock</strong>
+
+                            <p>
+                                Keep your stock quantity updated to avoid unavailable products.
+                            </p>
+
+                        </div>
+
                     </div>
-                    <div>
-                        <h6 class="fw-bold">Images</h6>
-                        <p class="text-muted small">Good product images increase sales by up to 40%.</p>
+
+
+                    <div class="tip">
+
+                        <div class="tip-icon">
+                            <i class="bi bi-image"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Product Image</strong>
+
+                            <p>
+                                Use a clear and attractive product photo.
+                            </p>
+
+                        </div>
+
                     </div>
+
                 </div>
+
             </div>
-            
-            <!-- Supplier Info -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-building"></i> Supplier Info</h5>
+
+
+            <!-- SUPPLIER -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-building text-success me-2"></i>
+                        Supplier
+                    </h5>
+
                 </div>
+
                 <div class="card-body">
-                    <p class="mb-1"><strong>{{ supplier.company_name }}</strong></p>
-                    <p class="text-muted small">{{ supplier.phone }}</p>
-                    <p class="text-muted small">{{ supplier.email }}</p>
-                    <span class="badge {% if supplier.is_verified == 'VERIFIED' %}bg-success{% else %}bg-warning{% endif %}">
+
+                    <h6 class="fw-bold">
+                        {{ supplier.company_name }}
+                    </h6>
+
+                    <p class="small text-muted mb-1">
+                        <i class="bi bi-telephone me-1"></i>
+                        {{ supplier.phone }}
+                    </p>
+
+                    <p class="small text-muted mb-3">
+                        <i class="bi bi-envelope me-1"></i>
+                        {{ supplier.email }}
+                    </p>
+
+
+                    <span class="badge
+                        {% if supplier.is_verified == 'VERIFIED' %}
+                            bg-success
+                        {% else %}
+                            bg-warning text-dark
+                        {% endif %}
+                    ">
+
+                        <i class="bi bi-patch-check me-1"></i>
+
                         {{ supplier.get_is_verified_display }}
+
                     </span>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
+
 {% endblock %}
 
-{% block extra_js %}
-<script>
-    // Auto-close alerts after 5 seconds
-    document.addEventListener('DOMContentLoaded', function() {
-        const alerts = document.querySelectorAll('.alert');
-        setTimeout(function() {
-            alerts.forEach(function(alert) {
-                const closeBtn = alert.querySelector('.btn-close');
-                if (closeBtn) {
-                    closeBtn.click();
-                }
-            });
-        }, 5000);
-    });
-</script>
+
+{% block extra_css %}
+
+<style>
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.page-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+    background: #e8f5e9;
+    color: #1a6e3e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.form-help {
+    color: #7a847e;
+    font-size: 0.78rem;
+    margin-top: 6px;
+}
+
+.current-image {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.current-image img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 1px solid #e3e8e4;
+}
+
+.image-upload input {
+    width: 100%;
+}
+
+.availability-box {
+    padding: 15px;
+    background: #f5f8f6;
+    border-radius: 12px;
+}
+
+.tip {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.tip:last-child {
+    margin-bottom: 0;
+}
+
+.tip-icon {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #e8f5e9;
+    color: #1a6e3e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tip strong {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.tip p {
+    margin: 0;
+    color: #78827c;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-header > a {
+        width: 100%;
+    }
+
+}
+
+</style>
+
 {% endblock %}

@@ -3,85 +3,396 @@
 {% block title %}Farmer Details - Extension Officer{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1"><i class="bi bi-person text-success me-2"></i>Farmer Details</h2>
-                    <p class="text-muted">{{ farmer.full_name }}</p>
+
+<div class="extension-farmer-detail">
+
+    <div class="container py-4">
+
+        <!-- =========================================================
+             HEADER
+        ========================================================== -->
+
+        <div class="dashboard-header-compact mb-4">
+
+            <div>
+                <div class="welcome-label">
+                    <span class="welcome-dot"></span>
+                    Farmer Details
                 </div>
-                <a href="{% url 'extension_farmers' %}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Farmers
+
+                <h1 class="dashboard-title">
+                    {{ farmer.full_name }}
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    <i class="bi bi-person me-1"></i>
+                    View farmer information and farming details
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a href="{% url 'extension_farmers' %}" class="dashboard-action secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Farmers</span>
+                </a>
+                <a href="tel:{{ farmer.phone_number }}" class="dashboard-action primary">
+                    <i class="bi bi-telephone"></i>
+                    <span>Call Farmer</span>
                 </a>
             </div>
-        </div>
-    </div>
 
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Personal Information</h5>
+        </div>
+
+        <!-- =========================================================
+             CONTENT
+        ========================================================== -->
+
+        <div class="dashboard-grid two-column">
+
+            <!-- Personal Information -->
+            <div class="dashboard-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-title">
+                            <span class="panel-title-icon">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            Personal Information
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Full Name</div>
-                        <div class="col-8">{{ farmer.full_name }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Phone</div>
-                        <div class="col-8">{{ farmer.phone_number }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Gender</div>
-                        <div class="col-8">{{ farmer.get_gender_display|default:"Not specified" }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Registered Via</div>
-                        <div class="col-8">{{ farmer.registered_via }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4 fw-bold">Registered</div>
-                        <div class="col-8">{{ farmer.created_at|date:"d M Y" }}</div>
+
+                <div class="panel-body">
+                    <div class="info-list">
+                        <div class="info-row">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value">{{ farmer.full_name }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone Number</span>
+                            <span class="info-value">
+                                <a href="tel:{{ farmer.phone_number }}" class="phone-link">
+                                    {{ farmer.phone_number }}
+                                </a>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Gender</span>
+                            <span class="info-value">{{ farmer.get_gender_display|default:"Not specified" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Registered Via</span>
+                            <span class="info-value">{{ farmer.registered_via|default:"-" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Registered</span>
+                            <span class="info-value">{{ farmer.created_at|date:"d M Y, H:i" }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Location & Farm</h5>
+            <!-- Location & Farm -->
+            <div class="dashboard-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-title">
+                            <span class="panel-title-icon location">
+                                <i class="bi bi-geo-alt"></i>
+                            </span>
+                            Location &amp; Farm
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Region</div>
-                        <div class="col-8">{{ farmer.region|default:"-" }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">District</div>
-                        <div class="col-8">{{ farmer.district|default:"-" }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Ward</div>
-                        <div class="col-8">{{ farmer.ward|default:"-" }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Village</div>
-                        <div class="col-8">{{ farmer.village|default:"-" }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4 fw-bold">Farm Size</div>
-                        <div class="col-8">{{ farmer.farm_size_acres|default:"-" }} acres</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4 fw-bold">Primary Crop</div>
-                        <div class="col-8">{{ farmer.primary_crop|default:"-" }}</div>
+
+                <div class="panel-body">
+                    <div class="info-list">
+                        <div class="info-row">
+                            <span class="info-label">Region</span>
+                            <span class="info-value">{{ farmer.region|default:"-" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">District</span>
+                            <span class="info-value">{{ farmer.district|default:"-" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Ward</span>
+                            <span class="info-value">{{ farmer.ward|default:"-" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Village</span>
+                            <span class="info-value">{{ farmer.village|default:"-" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Farm Size</span>
+                            <span class="info-value">{{ farmer.farm_size_acres|default:"-" }} acres</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Primary Crop</span>
+                            <span class="info-value">{{ farmer.primary_crop|default:"-" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Secondary Crop</span>
+                            <span class="info-value">{{ farmer.secondary_crop|default:"-" }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
+
     </div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.extension-farmer-detail {
+    min-height: calc(100vh - 76px);
+    padding: 0 0 55px;
+    background: #f5f8f6;
+}
+
+.dashboard-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-top: 20px;
+}
+
+.welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #21874b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+}
+
+.welcome-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2d8f4e;
+    box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #183b29;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    margin: 7px 0 0;
+    color: #7c8881;
+    font-size: 0.85rem;
+}
+
+.dashboard-subtitle i {
+    color: #21874b;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.dashboard-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 13px;
+    border-radius: 9px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.dashboard-action.primary {
+    color: #fff;
+    background: linear-gradient(135deg, #1a6e3e, #2d8f4e);
+    box-shadow: 0 4px 12px rgba(26,110,62,.15);
+}
+
+.dashboard-action.secondary {
+    color: #315dcb;
+    border: 1px solid #d9e1f5;
+    background: #fff;
+}
+
+.dashboard-action:hover {
+    transform: translateY(-1px);
+}
+
+.dashboard-grid.two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.dashboard-panel {
+    background: #fff;
+    border: 1px solid #e6ebe7;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(27,67,43,.045);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 19px 21px;
+    border-bottom: 1px solid #edf0ee;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #1c3326;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.panel-title-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: #21874b;
+    background: #e9f6ed;
+    font-size: .82rem;
+}
+
+.panel-title-icon.location {
+    color: #2869d6;
+    background: #edf3ff;
+}
+
+.panel-body {
+    padding: 20px 21px;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f2f1;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.info-label {
+    color: #8a948e;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.info-value {
+    color: #1c3326;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: right;
+}
+
+.phone-link {
+    color: #2869d6;
+    text-decoration: none;
+}
+
+.phone-link:hover {
+    color: #1a6e3e;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .dashboard-grid.two-column {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .extension-farmer-detail {
+        min-height: calc(100vh - 66px);
+    }
+
+    .dashboard-header-compact {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .dashboard-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .panel-header {
+        padding: 15px;
+    }
+
+    .panel-body {
+        padding: 15px 16px;
+    }
+
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        padding-bottom: 8px;
+    }
+
+    .info-value {
+        text-align: left;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+
+    .dashboard-subtitle {
+        font-size: 0.78rem;
+    }
+}
+</style>
 {% endblock %}
